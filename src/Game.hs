@@ -1,10 +1,17 @@
 module Game where
 
-import Control.Monad.State (get, StateT, gets, modify, lift)
-import Control.Monad.Except (liftEither, throwError, ExceptT, lift)
+import Control.Monad.State (StateT, get, gets, lift, modify, runStateT)
+import Control.Monad.Except
+  ( ExceptT
+  , catchError
+  , lift
+  , liftEither
+  , runExceptT
+  , throwError
+  )
 import Control.Monad
 
-import Board (emptyBoard, Board)
+import Board (Board, emptyBoard)
 import Defs
 import Move
 
@@ -16,11 +23,16 @@ type Game = StateT GameState (ExceptT GameError IO)
 apply:: Move -> GameState -> GameState
 apply = undefined
 
+getNextTurn :: Move -> GameState -> TurnState
+getNextTurn = undefined
+
 executeMove :: Move -> Game ()
 executeMove m = do
   gs <- get
   if validMove gs m
-    then modify (apply m)
+    then do
+      let t = getNextTurn m gs
+      modify (apply m) >> modify (\gs -> gs {turn = t})
     else throwError InvalidMove
 
 gameStart :: GameState
@@ -37,9 +49,24 @@ getTurnInput = do
   s <- (lift . lift) getLine
   liftEither $ parseMove s
 
+printErr :: GameError -> Game ()
+printErr = lift . lift . print
 
 takeTurn :: Game ()
 takeTurn = do
-  m <- getTurnInput
+  m <- getTurnInput `catchError` (\e -> printErr e >> getTurnInput)
   executeMove m
 
+runGame :: Game ()
+runGame = do
+  takeTurn
+  (GameState b t) <- get
+  case t of
+    End -> (lift . lift) (putStrLn $ winnerStr (calcWinner b))
+    _ -> takeTurn
+
+calcWinner :: Board -> Player
+calcWinner b = undefined
+
+winnerStr :: Player -> String
+winnerStr _ = "hello"
