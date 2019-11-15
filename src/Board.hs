@@ -1,6 +1,14 @@
 module Board where
 
-data Board = Board
-newtype Coordinate = Coordinate (Int, Int)
+import Defs
 
 emptyBoard = undefined
+
+calcWinner :: Board -> Player
+calcWinner b = PWhite
+
+apply:: Move -> Board -> Board
+apply = undefined
+
+getNextTurn :: Move -> Board -> TurnState -> TurnState
+getNextTurn currentTurn board = undefined

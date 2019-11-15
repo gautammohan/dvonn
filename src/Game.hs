@@ -22,19 +22,14 @@ liftGame = Control.Monad.State.lift . Control.Monad.Except.lift
 
 type Game = StateT GameState (ExceptT GameError IO)
 
-apply:: Move -> GameState -> GameState
-apply = undefined
-
-getNextTurn :: Move -> GameState -> TurnState
-getNextTurn = undefined
-
 executeMove :: Move -> Game ()
 executeMove m = do
-  gs <- get
+  gs@(GameState b t _) <- get
   if validMove gs m
     then do
-      let t = getNextTurn m gs
-      modify (apply m) >> modify (\gs -> gs {turn = t})
+      let newT = getNextTurn m b t
+          newB = apply m b
+      modify (apply m) >> modify (\gs -> gs {turn = newT, board = newB})
     else throwError InvalidMove
 
 startState :: GameState
@@ -44,14 +39,16 @@ getTurnInput :: Game Move
 getTurnInput = do
   (lift . lift ) $ putStr "Move> "
   s <- (lift . lift) getLine
-  liftEither $ parseMove s
+  case liftEither $ parseMove s of
+    Left e -> printErr e >> getTurnInput
+    Right m -> return m
 
 printErr :: GameError -> Game ()
 printErr = lift . lift . print
 
 takeTurn :: Game ()
 takeTurn = do
-  m <- getTurnInput `catchError` (\e -> printErr e >> getTurnInput)
+  m <- getTurnInput
   executeMove m
 
 phase1 :: Game ()
@@ -75,9 +72,6 @@ phase2 = do
 
 dvonn :: Game Player
 dvonn = phase1 >> modify (\gs -> gs {phase = Phase2}) >> phase2
-
-calcWinner :: Board -> Player
-calcWinner b = PWhite
 
 evalGame :: GameState -> Game a -> IO (Either GameError (a, GameState))
 evalGame s g = runExceptT (runStateT g s)

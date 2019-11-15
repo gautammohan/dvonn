@@ -1,10 +1,10 @@
 module Move where
 
-import Board (Board, Coordinate (Coordinate))
 import Defs
-  ( GameError(ParseError)
+  ( Board
+  , Coordinate(Coordinate)
+  , GameError(ParseError)
   , GameState
-  , Move
   , Move(Move)
   , Player(PBlack, PWhite)
   )

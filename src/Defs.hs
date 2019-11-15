@@ -1,6 +1,9 @@
 module Defs where
 
-import Board (Board, Coordinate)
+data Board = Board
+
+newtype Coordinate =
+  Coordinate (Int, Int)
 
 data TurnState
   = PlacingRed
