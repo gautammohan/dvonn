@@ -37,8 +37,8 @@ executeMove m = do
       modify (apply m) >> modify (\gs -> gs {turn = t})
     else throwError InvalidMove
 
-gameStart :: GameState
-gameStart = GameState emptyBoard Start
+startState :: GameState
+startState = GameState emptyBoard Start Phase1
 
 -- game begins by players
 phase1Turns :: [TurnState]
@@ -59,20 +59,26 @@ takeTurn = do
   m <- getTurnInput `catchError` (\e -> printErr e >> getTurnInput)
   executeMove m
 
--- phase1 :: Game ()
-phase1 = intersperse takeTurn (map updateTurn phase1Turns)
+phase1 :: Game ()
+phase1 = sequence_ $ intersperse takeTurn (map updateTurn phase1Turns)
   where
     updateTurn :: TurnState -> Game ()
     updateTurn t = modify $ \gs -> gs {turn = t}
 
-
 phase2 :: Game Player
 phase2 = do
   takeTurn
-  (GameState b t) <- get
+  (GameState b t _) <- get
   case t of
     End -> return $ calcWinner b
     _ -> phase2
 
+dvonn :: Game Player
+dvonn = phase1 >> modify (\gs -> gs {phase = Phase2}) >> phase2
+
 calcWinner :: Board -> Player
 calcWinner b = undefined
+
+evalGame :: GameState -> Game a -> IO (Either GameError (a, GameState))
+evalGame s g = runExceptT (runStateT g s)
+

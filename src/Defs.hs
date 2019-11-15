@@ -11,6 +11,8 @@ data TurnState
   | Start
   | End
 
+data GamePhase = Phase1 | Phase2
+
 data Piece
   = Red
   | White
@@ -18,7 +20,7 @@ data Piece
 
 data Player
   = PBlack
-  | PWhite
+  | PWhite deriving (Show)
 
 
 data Move = Move
@@ -30,6 +32,7 @@ data Move = Move
 data GameState = GameState
   { board :: Board
   , turn :: TurnState
+  , phase :: GamePhase
   }
 
 data GameError = InvalidMove deriving (Show)
