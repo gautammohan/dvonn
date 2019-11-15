@@ -11,4 +11,4 @@ apply:: Move -> Board -> Board
 apply = undefined
 
 getNextTurn :: Move -> Board -> TurnState -> TurnState
-getNextTurn currentTurn board = undefined
+getNextTurn move board currentTurn = undefined
