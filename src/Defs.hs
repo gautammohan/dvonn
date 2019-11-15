@@ -35,4 +35,4 @@ data GameState = GameState
   , phase :: GamePhase
   }
 
-data GameError = InvalidMove deriving (Show)
+data GameError = InvalidMove | ParseError deriving (Show)

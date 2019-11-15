@@ -40,14 +40,9 @@ executeMove m = do
 startState :: GameState
 startState = GameState emptyBoard Start Phase1
 
--- game begins by players
-phase1Turns :: [TurnState]
-phase1Turns =
-  [PlacingRed, PlacingRed, PlacingRed] ++
-  take 46 (cycle [PlacingBlack, PlacingWhite])
-
 getTurnInput :: Game Move
 getTurnInput = do
+  (lift . lift ) $ putStr "Move> "
   s <- (lift . lift) getLine
   liftEither $ parseMove s
 
@@ -65,6 +60,11 @@ phase1 = sequence_ $ intersperse takeTurn (map updateTurn phase1Turns)
     updateTurn :: TurnState -> Game ()
     updateTurn t = modify $ \gs -> gs {turn = t}
 
+    phase1Turns :: [TurnState]
+    phase1Turns =
+      [PlacingRed, PlacingRed, PlacingRed] ++
+      take 46 (cycle [PlacingBlack, PlacingWhite])
+
 phase2 :: Game Player
 phase2 = do
   takeTurn
@@ -77,7 +77,7 @@ dvonn :: Game Player
 dvonn = phase1 >> modify (\gs -> gs {phase = Phase2}) >> phase2
 
 calcWinner :: Board -> Player
-calcWinner b = undefined
+calcWinner b = PWhite
 
 evalGame :: GameState -> Game a -> IO (Either GameError (a, GameState))
 evalGame s g = runExceptT (runStateT g s)
