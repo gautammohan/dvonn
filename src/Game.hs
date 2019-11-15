@@ -11,7 +11,9 @@ import Control.Monad.Except
   )
 import Control.Monad
 
-import Board (Board, emptyBoard)
+import Data.List
+
+import Board (emptyBoard, Board)
 import Defs
 import Move
 
@@ -39,8 +41,8 @@ gameStart :: GameState
 gameStart = GameState emptyBoard Start
 
 -- game begins by players
-phase1 :: [TurnState]
-phase1 =
+phase1Turns :: [TurnState]
+phase1Turns =
   [PlacingRed, PlacingRed, PlacingRed] ++
   take 46 (cycle [PlacingBlack, PlacingWhite])
 
@@ -57,16 +59,20 @@ takeTurn = do
   m <- getTurnInput `catchError` (\e -> printErr e >> getTurnInput)
   executeMove m
 
-runGame :: Game ()
-runGame = do
+-- phase1 :: Game ()
+phase1 = intersperse takeTurn (map updateTurn phase1Turns)
+  where
+    updateTurn :: TurnState -> Game ()
+    updateTurn t = modify $ \gs -> gs {turn = t}
+
+
+phase2 :: Game Player
+phase2 = do
   takeTurn
   (GameState b t) <- get
   case t of
-    End -> (lift . lift) (putStrLn $ winnerStr (calcWinner b))
-    _ -> takeTurn
+    End -> return $ calcWinner b
+    _ -> phase2
 
 calcWinner :: Board -> Player
 calcWinner b = undefined
-
-winnerStr :: Player -> String
-winnerStr _ = "hello"

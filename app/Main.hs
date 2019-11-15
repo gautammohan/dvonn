@@ -1,6 +1,7 @@
 module Main where
 
-import Lib
+import Game (runGame)
 
 main :: IO ()
-main = someFunc
+main = do
+  winner <- 
