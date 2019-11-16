@@ -56,3 +56,14 @@ connected c b = do
                 if any (containsRed b) frontier' then True else connectedHelper frontier' b visited 
 
 -- TODO TEST THIS
+--
+data Player = PBlack | PWhite
+
+data Move = Move {player :: Player, start :: Coordinate, end :: Coordinate}
+
+validMove :: Board -> Move -> Bool
+validMove = undefined
+
+getPossibleMoves :: Player -> Board -> [Move]
+getPossibleMoves = undefined
+
