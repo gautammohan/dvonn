@@ -40,10 +40,5 @@ validMove b m = case M.lookup (start m) (getMap b) of
 placePiece :: Board -> Piece -> Coordinate -> Board
 placePiece b p c = Board $ M.insert c (Stack [p]) (getMap b)
 
---Need to check if move is valid first
---Again, this should probably be wrapped in the Monad
-executeMove :: Board -> Piece -> Coordinate -> Board
-executeMove b p c =  undefined
-
 getPossibleMoves :: Player -> Board -> [Move]
 getPossibleMoves = undefined
