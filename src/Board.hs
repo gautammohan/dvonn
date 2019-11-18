@@ -14,8 +14,8 @@ emptyBoard = undefined
 
 validCoordinate :: Coordinate -> Bool
 validCoordinate c = c `elem` [Coordinate (x,y) | x <- [3 .. 9], y <- [1 .. 5]]
-                 || c `elem` [Coordinate (x,y) | x <- [2,6], y <- [1 ..4]]
-                 || c `elem` [Coordinate (x,y) | x <- [1,7], y <- [1 .. 3]]
+                 || c `elem` [Coordinate (x,y) | x <- [2,10], y <- [1 ..4]]
+                 || c `elem` [Coordinate (x,y) | x <- [1,11], y <- [1 .. 3]]
 
 areNeighbors :: Coordinate -> Coordinate -> Bool
 areNeighbors (Coordinate (x1,y1)) (Coordinate (x2, y2))
@@ -50,5 +50,15 @@ connected c b = do
              (do let visited = visited ++ frontier'
                  any (containsRed b) frontier' || connectedHelper frontier' b visited)
 
+calcWinner = undefined
+apply = undefined
+getNextTurn = undefined
+
 -- TODO TEST THIS
 --
+nonempty :: Board -> [Coordinate]
+nonempty = undefined
+
+-- count empty spaces on the board
+countEmpty :: Board -> Int
+countEmpty = undefined

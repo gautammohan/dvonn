@@ -13,7 +13,7 @@ import Control.Monad
 
 import Data.List
 
-import Board (emptyBoard)
+import Board (calcWinner, apply, getNextTurn, emptyBoard)
 import Defs
 import Move
 
@@ -25,11 +25,11 @@ type Game = StateT GameState (ExceptT GameError IO)
 executeMove :: Move -> Game ()
 executeMove m = do
   gs@(GameState b t _) <- get
-  if validMove gs m
+  if validMove b m
     then do
       let newT = getNextTurn m b t
           newB = apply m b
-      modify (apply m) >> modify (\gs -> gs {turn = newT, board = newB})
+      modify (\gs -> gs {turn = newT, board = newB})
     else throwError InvalidMove
 
 startState :: GameState

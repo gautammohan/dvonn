@@ -24,6 +24,8 @@ dependencies:
 - containers
 - mtl
 - monad-loops
+- QuickCheck
+- HUnit
 
 library:
   source-dirs: src

@@ -42,3 +42,5 @@ placePiece b p c = Board $ M.insert c (Stack [p]) (getMap b)
 
 getPossibleMoves :: Player -> Board -> [Move]
 getPossibleMoves = undefined
+
+parseMove = undefined
