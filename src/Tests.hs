@@ -64,20 +64,28 @@ prop_empty_incease (Trace l) = sort l' == l' && l' == nub l'
 
 newtype Trace = Trace [Board]
 
+
+getPossibleMoves :: Board -> [Move]
 getPossibleMoves = undefined
 
-instance Arbitrary Trace where
-  arbitrary = undefined
+-- instance Arbitrary Trace where
+--   arbitrary = undefined
 --   arbitrary = do
 --     b <- arbitrary :: Gen Board
---     helper b where
---     undefined
---   where
---     helper :: Gen Board -> [Gen Board]
---     helper board' = do
---        board <- board'
---        let allmoves = getPossibleMoves board
---        if null allmoves then return []
---        let move = oneof $ return <$> allmoves
---        let b' = apply move board
---        oneof $ frequency [(1, return []), (5, b': helper)]
+--     helper b
+
+
+helper :: Board -> Gen [Board]
+helper board = do
+  let allmoves = getPossibleMoves board
+  if null allmoves
+    then return [board]
+    else do
+    move <- oneof $ return <$> allmoves
+    let newboard = apply move board
+    frequency [ (1,return [board,newboard])
+              , (3, do
+                    nextboards <- helper newboard
+                    return $ board : nextboards)]
+  -- let b' = apply move board
+  --      oneof $ frequency [(1, return []), (5, b': helper)]

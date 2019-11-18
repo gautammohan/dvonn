@@ -51,6 +51,8 @@ connected c b = do
                  any (containsRed b) frontier' || connectedHelper frontier' b visited)
 
 calcWinner = undefined
+
+apply :: Move -> Board -> Board
 apply = undefined
 getNextTurn = undefined
 
