@@ -53,6 +53,7 @@ connected c b =  containsRed b c || connectedHelper [c] b [] where
 
 calcWinner :: Board -> Player
 calcWinner = undefined
+
 --calcWinner b = do
 --   let stacks = map (\(Just y) -> y) $ map (\x -> M.lookup x (getMap b)) (nonempty b) 
 --       whiteStacks = filter (\(Stack s) -> head s == Black) stacks 
@@ -66,6 +67,7 @@ calcWinner = undefined
 apply :: Move -> Board -> Board
 apply = undefined
 
+getNextTurn :: Board -> Player -> Player
 getNextTurn = undefined
 
 --TODO Should we include discard pile here???

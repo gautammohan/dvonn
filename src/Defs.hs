@@ -7,11 +7,13 @@ newtype Coordinate = Coordinate (Int, Int)
     deriving (Show, Eq, Ord)
 
 newtype Board = Board {getMap :: M.Map Coordinate Stack}
+    deriving (Show)
 
 data Piece = Red | White | Black
     deriving (Show, Eq)
 
 newtype Stack = Stack [Piece]
+    deriving (Show)
 
 instance Num Coordinate where
    (+) (Coordinate (x1,y1)) (Coordinate (x2,y2)) = Coordinate (x1+x2, y1+y2)

@@ -4,7 +4,7 @@ import Test.HUnit
 import Test.QuickCheck
 import Data.List
 import Control.Monad
-
+import Data.Map as M hiding (null)
 
 import Defs
 import Board
@@ -89,3 +89,19 @@ helper board = do
                     return $ board : nextboards)]
   -- let b' = apply move board
   --      oneof $ frequency [(1, return []), (5, b': helper)]
+
+--Check that each element is empty, too? 
+testEmptyBoard :: Test
+testEmptyBoard = "empty" ~: TestList [
+  length (M.toList $ getMap emptyBoard) ~?= 50]
+
+testValidCoordinate :: Test
+testValidCoordinate = "validCoordinate" ~: TestList [
+  validCoordinate (Coordinate (-1,-1)) ~?= False,
+  validCoordinate (Coordinate (1,5)) ~?= False,
+  validCoordinate (Coordinate (3,3)) ~?= True]
+
+testAreNeighbors :: Test
+testAreNeighbors = "areNeighbors" ~: TestList [
+  areNeighbors (Coordinate (11,1)) (Coordinate (11,2)) ~?= True]
+
