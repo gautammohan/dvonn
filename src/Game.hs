@@ -22,6 +22,7 @@ import Data.List
 import Board (calcWinner, apply, getNextTurn, emptyBoard)
 import Defs
 import Move
+import IOInterface
 
 liftGame :: IO a -> Game a
 liftGame = Control.Monad.State.lift . Control.Monad.Except.lift

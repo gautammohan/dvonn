@@ -216,3 +216,11 @@ testGetPossibleMoves = "getPossibleMoves" ~: TestList []
 testParseMove :: Test 
 testParseMove = "testParseMove" ~: TestList []
 
+-------------------------------------------------------------------------------
+-- The following tests verify basic functionality in the Game module
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- The following tests verify the IO functionality
+-------------------------------------------------------------------------------
+
