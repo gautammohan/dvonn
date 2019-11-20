@@ -30,7 +30,7 @@ main = do
 --  quickCheck $ prop_empty_increase 
 --       (Trace [])
 -------------------------------------------------------------------------------
--- A quickCheck and framework for randomized testing
+-- A framework for randomized testing
 -------------------------------------------------------------------------------
 
 instance Arbitrary Piece where
@@ -49,10 +49,6 @@ instance Arbitrary Coordinate where
           | x == 2 || x == 10 = rand `mod` 4
           | otherwise = rand `mod` 5
 
--- Our Arbitrary Coordinate instance should only generate valid coordinates
-prop_coordinate_generator :: Coordinate -> Bool
-prop_coordinate_generator = validCoordinate
-
 getRandNeighbor :: Coordinate -> Gen Coordinate
 getRandNeighbor c = do
   d <- oneof $ return . Coordinate <$>
@@ -61,7 +57,8 @@ getRandNeighbor c = do
 
 newtype Path = Path [Coordinate]
 
--- TODO figure out how to use this to test the neighbor property aka get it working
+-- TODO figure out how to use this to test the neighbor property 
+-- aka get it working
 instance Arbitrary Tests.Path where
    arbitrary = undefined
 --     where
@@ -71,17 +68,8 @@ instance Arbitrary Tests.Path where
 --         if validCoordinate coord then
 --           Just (c, getRandNeighbor c)
 --           else Nothing
---       -- check c = if validCoordinate c then return (return c,getRandNeighbor c) else Nothing
-
--- All pieces on the board must have a path to a red piece
-prop_no_disconnected_pieces :: Board -> Bool
-prop_no_disconnected_pieces b = all (`connected` b) (nonempty b)
-
--- The number of empty spaces on the board increases by at least 1 each turn
-prop_empty_increase :: Trace -> Bool
-prop_empty_increase (Trace l) = sort l' == l' && l' == nub l'
-  where
-    l' = countEmpty <$> l
+--       -- check c = if validCoordinate c then return 
+--       (return c,getRandNeighbor c) else Nothing
 
 newtype Trace = Trace [Board]
 
@@ -104,6 +92,44 @@ helper board = do
               , (3, do
                     nextboards <- helper newboard
                     return $ board : nextboards)]
+
+-------------------------------------------------------------------------------
+-- QuickCheck instances for game properties
+-------------------------------------------------------------------------------
+
+-- Our Arbitrary Coordinate instance should only generate valid coordinates
+prop_coordinate_generator :: Coordinate -> Bool
+prop_coordinate_generator = validCoordinate
+
+-- All pieces on the board must have a path to a red piece
+prop_no_disconnected_pieces :: Board -> Bool
+prop_no_disconnected_pieces b = all (`connected` b) (nonempty b)
+
+-- There cannot exist a hole on the board
+prop_no_hole :: Board -> Bool
+prop_no_hole b = undefined
+
+-- In the move phase, the total number of pieces on the board not including 
+-- the discard pile must be monotonically decreasing
+prop_inplay_decrease :: Board -> Bool
+prop_inplay_decrease = undefined
+
+-- Over the course of the game, the number of totally surrounded pieces
+-- decreases monotonically
+prop_surrounded_decrease :: Board -> Bool
+prop_surrounded_decrease = undefined
+
+-- The number of pieces of each color between the board and discard pile stay
+-- consistent after the placing phase. I.e., check that we do not lose any
+-- pieces
+prop_consistent_sum :: Board -> Bool
+prop_consistent_sum = undefined
+
+-- The number of empty spaces on the board increases by at least 1 each turn
+prop_empty_increase :: Trace -> Bool
+prop_empty_increase (Trace l) = sort l' == l' && l' == nub l'
+  where
+    l' = countEmpty <$> l
 
 -------------------------------------------------------------------------------
 -- The following tests verify basic functionality in the Board module
