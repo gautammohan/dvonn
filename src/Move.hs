@@ -63,5 +63,6 @@ placePiece b p c = Board $ M.insert c (Stack [p]) (getMap b)
 getPossibleMoves :: Board -> [Move]
 getPossibleMoves = undefined
 
---What is the type signature here?
+-- TODO: What is the type signature here? Move to an IO module?
+-- Need to add something for displaying the board state
 parseMove = undefined

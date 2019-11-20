@@ -16,6 +16,23 @@ import Defs
 import Board
 import Move
 
+-------------------------------------------------------------------------------
+-- A main actions to run all the tests
+-------------------------------------------------------------------------------
+main :: IO ()
+main = do
+   _ <- runTestTT (TestList [tBlock, tMove])
+   quickCheck prop_coordinate_generator
+   quickCheck $ prop_no_disconnected_pieces emptyBoard
+   return ()
+
+-- TODO: Generalize beyond emptyBoard once we have full arbitrary intances
+--  quickCheck $ prop_empty_increase 
+--       (Trace [])
+-------------------------------------------------------------------------------
+-- A quickCheck and framework for randomized testing
+-------------------------------------------------------------------------------
+
 instance Arbitrary Piece where
   arbitrary = oneof $ return <$> [Red, White, Black]
 
@@ -61,8 +78,8 @@ prop_no_disconnected_pieces :: Board -> Bool
 prop_no_disconnected_pieces b = all (`connected` b) (nonempty b)
 
 -- The number of empty spaces on the board increases by at least 1 each turn
-prop_empty_incease :: Trace -> Bool
-prop_empty_incease (Trace l) = sort l' == l' && l' == nub l'
+prop_empty_increase :: Trace -> Bool
+prop_empty_increase (Trace l) = sort l' == l' && l' == nub l'
   where
     l' = countEmpty <$> l
 
@@ -88,6 +105,13 @@ helper board = do
                     nextboards <- helper newboard
                     return $ board : nextboards)]
 
+-------------------------------------------------------------------------------
+-- The following tests verify basic functionality in the Board module
+-------------------------------------------------------------------------------
+
+tBlock :: Test
+tBlock = TestList [testEmptyBoard, testValidCoordinate, testAreNeighbors]
+
 -- TODO : Check that each element is empty, too? 
 testEmptyBoard :: Test
 testEmptyBoard = "empty" ~: TestList [
@@ -106,16 +130,48 @@ testAreNeighbors = "areNeighbors" ~: TestList [
   areNeighbors (Coordinate (-1,-1)) (Coordinate (1,1)) ~?= False,
   areNeighbors (Coordinate (11,3)) (Coordinate (11,4)) ~?= False]
 
--- TODO : Fill in more once better board generation tools
 testContainsRed :: Test
 testContainsRed = "containsRed" ~: TestList []
 
--- TODO : Fill in more once have better board generation tools
 testNeighbors :: Test
 testNeighbors = "neighbors" ~: TestList []
 
+testSurrounded :: Test
+testSurrounded = "surrounded" ~: TestList []
+
 testConnected :: Test
 testConnected = "connected" ~: TestList []
+
+testCalcWinner :: Test
+testCalcWinner = "calcWinner" ~: TestList []
+
+testApply :: Test
+testApply = "apply" ~: TestList []
+
+testGetNextTurn :: Test
+testGetNextTurn = "getNextTurn" ~: TestList []
+
+testNonEmpty :: Test
+testNonEmpty = "testNonEmpty" ~: TestList []
+
+testCountEmpty :: Test
+testCountEmpty = "testCountEmpty" ~: TestList []
+
+-------------------------------------------------------------------------------
+-- The following tests verify basic functionality in the Move module
+-------------------------------------------------------------------------------
+
+tMove :: Test
+tMove = TestList [testPlayerOwns]
+
+testIsLinear :: Test
+testIsLinear = "isLinear" ~: TestList []
+
+testIsOnBoard :: Test
+testIsOnBoard = "isOnBoard" ~: TestList []
+
+testDistance :: Test
+testDistance = "distance" ~: TestList []
 
 testPlayerOwns :: Test
 testPlayerOwns = "playerOwns" ~: TestList [
@@ -124,4 +180,13 @@ testPlayerOwns = "playerOwns" ~: TestList [
 
 testValidMove :: Test
 testValidMove = "validMove" ~: TestList []
+
+testPlacePiece :: Test
+testPlacePiece = "placePiece" ~: TestList []
+
+testGetPossibleMoves :: Test
+testGetPossibleMoves = "getPossibleMoves" ~: TestList []
+
+testParseMove :: Test 
+testParseMove = "testParseMove" ~: TestList []
 
