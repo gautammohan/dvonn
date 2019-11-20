@@ -111,12 +111,12 @@ prop_no_hole b = undefined
 
 -- In the move phase, the total number of pieces on the board not including 
 -- the discard pile must be monotonically decreasing
-prop_inplay_decrease :: Board -> Bool
+prop_inplay_decrease :: Trace -> Bool
 prop_inplay_decrease = undefined
 
 -- Over the course of the game, the number of totally surrounded pieces
 -- decreases monotonically
-prop_surrounded_decrease :: Board -> Bool
+prop_surrounded_decrease :: Trace -> Bool
 prop_surrounded_decrease = undefined
 
 -- The number of pieces of each color between the board and discard pile stay
