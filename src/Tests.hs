@@ -16,9 +16,6 @@ import Defs
 import Board
 import Move
 
-validMoves :: Board -> [Move]
-validMoves = undefined
-
 instance Arbitrary Piece where
   arbitrary = oneof $ return <$> [Red, White, Black]
 
@@ -35,7 +32,7 @@ instance Arbitrary Coordinate where
           | x == 2 || x == 10 = rand `mod` 4
           | otherwise = rand `mod` 5
 
--- our Arbitrary Coordinate instance should only generate valid coordinates
+-- Our Arbitrary Coordinate instance should only generate valid coordinates
 prop_coordinate_generator :: Coordinate -> Bool
 prop_coordinate_generator = validCoordinate
 
@@ -59,21 +56,17 @@ instance Arbitrary Tests.Path where
 --           else Nothing
 --       -- check c = if validCoordinate c then return (return c,getRandNeighbor c) else Nothing
 
--- all pieces on the board must have a path to a red piece
+-- All pieces on the board must have a path to a red piece
 prop_no_disconnected_pieces :: Board -> Bool
 prop_no_disconnected_pieces b = all (`connected` b) (nonempty b)
 
--- the number of empty spaces on the board increases by at least 1 each turn
+-- The number of empty spaces on the board increases by at least 1 each turn
 prop_empty_incease :: Trace -> Bool
 prop_empty_incease (Trace l) = sort l' == l' && l' == nub l'
   where
     l' = countEmpty <$> l
 
 newtype Trace = Trace [Board]
-
-
-getPossibleMoves :: Board -> [Move]
-getPossibleMoves = undefined
 
 instance Arbitrary Trace where
    arbitrary = undefined
@@ -95,7 +88,7 @@ helper board = do
                     nextboards <- helper newboard
                     return $ board : nextboards)]
 
---Check that each element is empty, too? 
+-- TODO : Check that each element is empty, too? 
 testEmptyBoard :: Test
 testEmptyBoard = "empty" ~: TestList [
   length (M.toList $ getMap emptyBoard) ~?= 50]
@@ -113,11 +106,11 @@ testAreNeighbors = "areNeighbors" ~: TestList [
   areNeighbors (Coordinate (-1,-1)) (Coordinate (1,1)) ~?= False,
   areNeighbors (Coordinate (11,3)) (Coordinate (11,4)) ~?= False]
 
---Fill in more once better board generation tools
+-- TODO : Fill in more once better board generation tools
 testContainsRed :: Test
 testContainsRed = "containsRed" ~: TestList []
 
---Fill in more once have better board generation tools
+-- TODO : Fill in more once have better board generation tools
 testNeighbors :: Test
 testNeighbors = "neighbors" ~: TestList []
 
