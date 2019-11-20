@@ -1,15 +1,15 @@
+-------------------------------------------------------------------------------
+-- Authors: Emily Diana and Gautam Mohan
+-- Date:
+-- Assignment: Final Project
+-------------------------------------------------------------------------------
+
 module Board where
 
 import Data.Map as M hiding (null, foldr, filter, map)
 import Data.List
-
--- Is it worth having sign?
--- More general version of board
--- data Board = Board {getMap :: M.Map Coordinate Stack, width :: Int, height :: Int}
-
 import Defs
 
--- 
 emptyBoard :: Board
 emptyBoard = Board $ foldr (\x acc -> M.insert x (Stack []) acc) M.empty l where
     l = Coordinate (-1,-1) : [Coordinate (x,y) | x <- [1 ..11], y <- [1..5],
@@ -22,11 +22,13 @@ validCoordinate c = c `elem` [Coordinate (x,y) | x <- [3 .. 9], y <- [1 .. 5]]
 
 areNeighbors :: Coordinate -> Coordinate -> Bool
 areNeighbors (Coordinate (x1,y1)) (Coordinate (x2, y2))
-      = case abs (x2 - x1) of
+      = validCoordinate (Coordinate (x1,y1)) && 
+        validCoordinate (Coordinate (x2, y2)) &&
+        case abs (x2 - x1) of
           0 -> abs (y2 - y1) == 1
           1 -> case abs (y2 - y1) of
               0 -> True
-              1 -> ((x2 - x1) + (y2 - y1)) /= 0  -- Cute
+              1 -> ((x2 - x1) + (y2 - y1)) /= 0
               _ -> False
           _ -> False
 
@@ -41,9 +43,11 @@ neighbors c b = [Coordinate (x,y) | x <- [1 ..11], y<- [1..5],
                                     validCoordinate (Coordinate (x,y)),
                                     areNeighbors c (Coordinate (x,y))]
 
+
+--This may be very inefficient with the exhaustive neighbor search
 connected :: Coordinate -> Board -> Bool
 connected c b =  containsRed b c || connectedHelper [c] b [] where
-       connectedHelper xs b visited = do           --- This is very inefficient, maybe just make list of neighbors
+       connectedHelper xs b visited = do           
            let frontier = Data.List.nub $ foldr
                   (\y ys -> neighbors y b ++ ys) ([] :: [Coordinate]) xs
                frontier' = filter (`notElem` visited) frontier
@@ -67,14 +71,16 @@ calcWinner = undefined
 apply :: Move -> Board -> Board
 apply = undefined
 
-getNextTurn :: Board -> Player -> Player
+getNextTurn :: Move -> Board -> TurnState -> TurnState 
 getNextTurn = undefined
 
 --TODO Should we include discard pile here???
 -- returns list of nonempty spaces on board,  not including discard pile
 nonempty :: Board -> [Coordinate]
-nonempty b = filter (/= Coordinate (-1,-1)) $ map fst (filter (\(x, Stack y) -> (not $ null y)) (M.toList (getMap b)))
+nonempty b = filter (/= Coordinate (-1,-1)) $ map fst (filter (\(x, Stack y) 
+                     -> (not $ null y)) (M.toList (getMap b)))
 
 -- count empty spaces on the board
 countEmpty :: Board -> Int
-countEmpty b = length $ filter (\(x,y) -> x /= Coordinate (-1,-1)) (filter (\(x, Stack y) -> null y) (M.toList (getMap b))) 
+countEmpty b = length $ filter (\(x,y) -> x /= Coordinate (-1,-1)) 
+                    (filter (\(x, Stack y) -> null y) (M.toList (getMap b))) 

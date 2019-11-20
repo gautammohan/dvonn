@@ -1,3 +1,9 @@
+-------------------------------------------------------------------------------
+-- Authors: Emily Diana and Gautam Mohan
+-- Date:
+-- Assignment: Final Project
+------------------------------------------------------------------------------
+
 module Game where
 
 import Control.Monad.State (StateT, get, gets, lift, modify, runStateT)

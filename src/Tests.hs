@@ -1,3 +1,9 @@
+-------------------------------------------------------------------------------
+-- Authors: Emily Diana and Gautam Mohan
+-- Date: 
+-- Assigment: Final Project
+-------------------------------------------------------------------------------
+
 module Tests where
 
 import Test.HUnit
@@ -8,6 +14,7 @@ import Data.Map as M hiding (null)
 
 import Defs
 import Board
+import Move
 
 validMoves :: Board -> [Move]
 validMoves = undefined
@@ -41,8 +48,8 @@ getRandNeighbor c = do
 newtype Path = Path [Coordinate]
 
 -- TODO figure out how to use this to test the neighbor property aka get it working
--- instance Arbitrary Tests.Path where
---   arbitrary = undefined
+instance Arbitrary Tests.Path where
+   arbitrary = undefined
 --     where
 --       check :: Gen Coordinate -> Maybe (Gen Coordinate, Gen Coordinate)
 --       check c = do
@@ -56,7 +63,7 @@ newtype Path = Path [Coordinate]
 prop_no_disconnected_pieces :: Board -> Bool
 prop_no_disconnected_pieces b = all (`connected` b) (nonempty b)
 
--- the number of empty spaces on the board increases by at least 1 eavh turn
+-- the number of empty spaces on the board increases by at least 1 each turn
 prop_empty_incease :: Trace -> Bool
 prop_empty_incease (Trace l) = sort l' == l' && l' == nub l'
   where
@@ -68,8 +75,8 @@ newtype Trace = Trace [Board]
 getPossibleMoves :: Board -> [Move]
 getPossibleMoves = undefined
 
--- instance Arbitrary Trace where
---   arbitrary = undefined
+instance Arbitrary Trace where
+   arbitrary = undefined
 --   arbitrary = do
 --     b <- arbitrary :: Gen Board
 --     helper b
@@ -87,8 +94,6 @@ helper board = do
               , (3, do
                     nextboards <- helper newboard
                     return $ board : nextboards)]
-  -- let b' = apply move board
-  --      oneof $ frequency [(1, return []), (5, b': helper)]
 
 --Check that each element is empty, too? 
 testEmptyBoard :: Test
@@ -103,5 +108,27 @@ testValidCoordinate = "validCoordinate" ~: TestList [
 
 testAreNeighbors :: Test
 testAreNeighbors = "areNeighbors" ~: TestList [
-  areNeighbors (Coordinate (11,1)) (Coordinate (11,2)) ~?= True]
+  areNeighbors (Coordinate (11,1)) (Coordinate (11,2)) ~?= True,
+  areNeighbors (Coordinate (3,4)) (Coordinate (4,3)) ~?= False,
+  areNeighbors (Coordinate (-1,-1)) (Coordinate (1,1)) ~?= False,
+  areNeighbors (Coordinate (11,3)) (Coordinate (11,4)) ~?= False]
+
+--Fill in more once better board generation tools
+testContainsRed :: Test
+testContainsRed = "containsRed" ~: TestList []
+
+--Fill in more once have better board generation tools
+testNeighbors :: Test
+testNeighbors = "neighbors" ~: TestList []
+
+testConnected :: Test
+testConnected = "connected" ~: TestList []
+
+testPlayerOwns :: Test
+testPlayerOwns = "playerOwns" ~: TestList [
+  playerOwns PBlack (Stack [Black, White, Red]) ~?= True,
+  playerOwns PWhite (Stack [Red]) ~?= False]
+
+testValidMove :: Test
+testValidMove = "validMove" ~: TestList []
 

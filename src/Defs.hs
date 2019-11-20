@@ -1,8 +1,13 @@
+-------------------------------------------------------------------------------
+-- Authors: Emily Diana and Gautam Mohan
+-- Date:
+-- Assignment: Final Project
+-------------------------------------------------------------------------------
+
 module Defs where
 
 import Data.Map as M
 
--- Maybe change coordinate to record syntax
 newtype Coordinate = Coordinate (Int, Int)
     deriving (Show, Eq, Ord)
 
@@ -23,8 +28,7 @@ instance Num Coordinate where
    negate (Coordinate (x1, y1)) = Coordinate (-x1, -y1)
    abs (Coordinate (x1, y1)) = abs (Coordinate (abs x1, abs y1))
    signum (Coordinate (x1, y1)) = Coordinate (signum x1, signum y1)
---this is weird, do we have to derive everything?
---TODO is it safe to derive - here?
+-- TODO, do we have to derive everything, and is it safe?
 
 data TurnState
   = PlacingRed

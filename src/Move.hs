@@ -1,12 +1,16 @@
+-------------------------------------------------------------------------------
+-- Authors: Emily Diana and Gautam Mohan
+-- Date:
+-- Assignment: Final Project
+-------------------------------------------------------------------------------
+
 module Move where
 
-import Data.Map as M hiding (null, foldr, filter)
+import Data.Map as M
 import Data.List
 import Board
 
 import Defs
-
---validMove first checks to see if a move is linear in the hexagonal grid
 
 isLinear :: Move -> Bool
 isLinear m = case end m - start m of
@@ -40,7 +44,9 @@ validMove b m = case M.lookup (start m) (getMap b) of
 placePiece :: Board -> Piece -> Coordinate -> Board
 placePiece b p c = Board $ M.insert c (Stack [p]) (getMap b)
 
-getPossibleMoves :: Player -> Board -> [Move]
-getPossibleMoves = undefined
+--getPossibleMoves :: Player -> Board -> [Move]
+--getPossibleMoves = undefined
 
+--We also need the IO interface here
+--
 parseMove = undefined
