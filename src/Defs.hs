@@ -7,9 +7,14 @@
 module Defs where
 
 import Data.Map as M
+import Data.Set as S
 
 newtype Coordinate = Coordinate (Int, Int)
     deriving (Show, Eq, Ord)
+
+newtype Path = Path {getPath :: [Coordinate]}
+
+type Component = S.Set Coordinate
 
 newtype Board = Board {getMap :: M.Map Coordinate Stack}
     deriving (Show)
@@ -17,8 +22,9 @@ newtype Board = Board {getMap :: M.Map Coordinate Stack}
 data Piece = Red | White | Black
     deriving (Show, Eq)
 
-newtype Stack = Stack [Piece]
-    deriving (Show)
+newtype Stack = Stack
+  { getStack :: [Piece]
+  } deriving (Show)
 
 instance Num Coordinate where
    (+) (Coordinate (x1,y1)) (Coordinate (x2,y2)) = Coordinate (x1+x2, y1+y2)
