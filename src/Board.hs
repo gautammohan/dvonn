@@ -103,25 +103,25 @@ isSurrounded c b = length (neighbors c b) == 6
 -- | Determines which player has won based on who has the most pieces overall
 -- from stacks that that player controls.
 -- TODO: Is it possible to have a tie?
-calcWinner :: Board -> Player
-calcWinner = undefined
 
---calcWinner b = do
---   let stacks = map (\(Just y) -> y) $ map (\x -> M.lookup x (getMap b)) (nonempty b)
---       whiteStacks = filter (\(Stack s) -> head s == Black) stacks
---       blackStacks = filter (\(Stack s) -> head s == White) stacks
---   if length whiteStacks > length blackStacks then PWhite else PBlack
--- nonEmptyStacks = filter (\x -> case x of
---                                    Nothing -> False
---                                    _ -> True) stacks
+calcWinner :: Board -> Maybe Player
+calcWinner b = do 
+    let remaining = S.map (innerstack b) (nonempties b)
+        whiteStacks = S.filter (\s -> head s == White) remaining 
+        blackStacks = S.filter (\s -> head s == Black) remaining
+        white = concat whiteStacks
+        black = concat blackStacks
+    if length white > length black then Just PWhite 
+    else if length black > length white then Just PBlack
+    else Nothing     
 
 -- | Executes a move
 -- TODO: Error handling
 apply :: Move -> Board -> Board
-apply (Move c1 c2) b =
-  let newStack = innerstack b c1 ++ innerstack b c2
-      newM = 
-
+apply = undefined
+--apply (Move c1 c2) b =
+--  let newStack = innerstack b c1 ++ innerstack b c2
+--      newM = 
 
 innerstack :: Board -> Coordinate -> [Piece]
 innerstack b = getStack . (getMap b M.!)

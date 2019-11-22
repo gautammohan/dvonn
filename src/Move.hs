@@ -56,8 +56,8 @@ validMove b m = case M.lookup (start m) (getMap b) of
 --we will probably want to replace later.
 --Figure out how to check if this placement is valid,
 --probably in the game monad.
-placePiece :: Board -> Piece -> Coordinate -> Board
-placePiece b p c = Board $ M.insert c (Stack [p]) (getMap b)
+--placePiece :: Board -> Piece -> Coordinate -> Board
+--placePiece b p c = Board $ M.insert c (Stack [p]) (getMap b)
 
 -- | Finds all possible moves based on the board state
 getPossibleMoves :: Board -> [Move]

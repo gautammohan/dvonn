@@ -20,7 +20,7 @@ data Board = Board {getMap :: M.Map Coordinate Stack, getDiscard :: Stack}
     deriving (Show)
 
 data Piece = Red | White | Black
-    deriving (Show, Eq)
+    deriving (Show, Eq, Ord)
 
 newtype Stack = Stack
   { getStack :: [Piece]

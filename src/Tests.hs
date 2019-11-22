@@ -23,8 +23,9 @@ main :: IO ()
 main = do
    _ <- runTestTT (TestList [tBlock, tMove])
    quickCheck prop_coordinate_generator
-   quickCheck $ prop_no_disconnected_pieces emptyBoard
    return ()
+   
+--quickCheck $ prop_no_disconnected_pieces emptyBoard
 
 -- TODO: Generalize beyond emptyBoard once we have full arbitrary intances
 --  quickCheck $ prop_empty_increase 
@@ -102,8 +103,8 @@ prop_coordinate_generator :: Coordinate -> Bool
 prop_coordinate_generator = validCoordinate
 
 -- All pieces on the board must have a path to a red piece
-prop_no_disconnected_pieces :: Board -> Bool
-prop_no_disconnected_pieces b = all (`connected` b) (nonempty b)
+--prop_no_disconnected_pieces :: Board -> Bool
+--prop_no_disconnected_pieces b = all (`connected` b) (nonempty b)
 
 -- There cannot exist a hole on the board
 prop_no_hole :: Board -> Bool
@@ -136,7 +137,7 @@ prop_empty_increase (Trace l) = sort l' == l' && l' == nub l'
 -------------------------------------------------------------------------------
 
 tBlock :: Test
-tBlock = TestList [testEmptyBoard, testValidCoordinate, testAreNeighbors]
+tBlock = TestList [testEmptyBoard, testValidCoordinate]
 
 -- TODO : Check that each element is empty, too? 
 testEmptyBoard :: Test
@@ -149,12 +150,12 @@ testValidCoordinate = "validCoordinate" ~: TestList [
   validCoordinate (Coordinate (1,5)) ~?= False,
   validCoordinate (Coordinate (3,3)) ~?= True]
 
-testAreNeighbors :: Test
-testAreNeighbors = "areNeighbors" ~: TestList [
-  areNeighbors (Coordinate (11,1)) (Coordinate (11,2)) ~?= True,
-  areNeighbors (Coordinate (3,4)) (Coordinate (4,3)) ~?= False,
-  areNeighbors (Coordinate (-1,-1)) (Coordinate (1,1)) ~?= False,
-  areNeighbors (Coordinate (11,3)) (Coordinate (11,4)) ~?= False]
+--testAreNeighbors :: Test
+--testAreNeighbors = "areNeighbors" ~: TestList [
+--  areNeighbors (Coordinate (11,1)) (Coordinate (11,2)) ~?= True,
+--  areNeighbors (Coordinate (3,4)) (Coordinate (4,3)) ~?= False,
+--  areNeighbors (Coordinate (-1,-1)) (Coordinate (1,1)) ~?= False,
+--  areNeighbors (Coordinate (11,3)) (Coordinate (11,4)) ~?= False]
 
 testContainsRed :: Test
 testContainsRed = "containsRed" ~: TestList []
