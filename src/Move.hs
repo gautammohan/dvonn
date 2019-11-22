@@ -9,7 +9,7 @@ module Move where
 import Data.Map as M
 import Data.List
 import Board
-
+import Data.Set as S
 import Defs
 
 -- | Only linear moves are permitted
@@ -60,5 +60,11 @@ validMove b m = case M.lookup (start m) (getMap b) of
 --placePiece b p c = Board $ M.insert c (Stack [p]) (getMap b)
 
 -- | Finds all possible moves based on the board state
+--
 getPossibleMoves :: Board -> [Move]
-getPossibleMoves = undefined
+getPossibleMoves b = do
+   let candidates  = S.toList $ nonempties b 
+       white_moves = [m@(Move (Player PWhite) (start x) (end y)) | x <- candidates, y <- candidates,
+                                                       validMove b m]
+   undefined
+
