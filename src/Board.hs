@@ -58,6 +58,9 @@ containsRed b c  = case M.lookup c (getMap b) of
        Just (Stack s) -> Red `elem` s
        _  -> False
 
+hasRed :: Board -> S.Set Coordinate -> Bool
+hasRed b cs = not . S.null $ S.map (containsRed b) cs
+
 -- | Constructs the list of all active coordinates (i.e., coordinates
 -- with stacks) that are neighbors of the given coordinate
 neighbors :: Coordinate -> Board -> S.Set Coordinate
@@ -79,6 +82,8 @@ component b c = aux b (S.fromList [c]) (neighbors c b)
     addNewNeighbors curr newCoord =
       let updated = newCoord `S.insert` curr
        in aux b updated (neighbors newCoord b)
+
+allComponents = undefined
 
 -- | Checks to see whether a coordinate has six neighbors. If so, it is
 -- not permitted to be moved.
@@ -119,9 +124,24 @@ calcWinner b = do
 -- TODO: Error handling
 apply :: Move -> Board -> Board
 apply = undefined
---apply (Move c1 c2) b =
---  let newStack = innerstack b c1 ++ innerstack b c2
---      newM = 
+
+combine :: Board -> Coordinate -> Coordinate -> Board
+combine b c1 c2 =
+  let newStack = Stack $ innerstack b c1 ++ innerstack b c2
+      newM = M.insert c2 (Stack []) (M.insert c1 newStack (getMap b))
+   in b {getMap = newM}
+
+discard :: Board -> S.Set Coordinate -> Board
+discard b cs =
+  let m = getMap b
+      discards = Stack $ S.foldr (\c s -> getStack (m M.! c) ++ s) [] cs
+      newM = S.foldr (\c m -> M.insert c (Stack []) m) m cs
+   in b {getMap = newM, getDiscard = discards}
+
+cleanup :: Board -> Board
+cleanup b =
+  let emptyComponents = S.filter (hasRed b) (allComponents b)
+   in S.foldr (flip discard) b emptyComponents
 
 innerstack :: Board -> Coordinate -> [Piece]
 innerstack b = getStack . (getMap b M.!)
