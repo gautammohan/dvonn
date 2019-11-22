@@ -21,7 +21,11 @@ coordinates = S.fromList $
 -- | Adds all game coordinates, to a map and initializes each value to an empty
 -- stack
 emptyBoard :: Board
-emptyBoard = Board $ foldr (\x acc -> M.insert x (Stack []) acc) M.empty l
+emptyBoard =
+  Board
+    { getDiscard = Stack []
+    , getMap = foldr (\x acc -> M.insert x (Stack []) acc) M.empty l
+    }
   where
     l = S.toList coordinates
 
@@ -32,7 +36,7 @@ validCoordinate c = c `elem` coordinates
 allNeighbors :: Coordinate -> S.Set Coordinate
 allNeighbors (Coordinate (x, y)) =
   S.fromList $
-  filter validCoordinate $
+
   map
     Coordinate
     [ (x + 1, y)
@@ -48,20 +52,6 @@ allNeighbors (Coordinate (x, y)) =
 neighborOf :: Coordinate -> Coordinate -> Bool
 neighborOf c1 c2 = c1 `S.member` allNeighbors c2
 
-
--- | Determines if two coordinates are neighbors.
-areNeighbors :: Coordinate -> Coordinate -> Bool
-areNeighbors (Coordinate (x1,y1)) (Coordinate (x2, y2))
-      = validCoordinate (Coordinate (x1,y1)) &&
-        validCoordinate (Coordinate (x2, y2)) &&
-        case abs (x2 - x1) of
-          0 -> abs (y2 - y1) == 1
-          1 -> case abs (y2 - y1) of
-              0 -> True
-              1 -> ((x2 - x1) + (y2 - y1)) /= 0
-              _ -> False
-          _ -> False
-
 -- | Determines if a coordinate has a stack with a red piece
 containsRed :: Board -> Coordinate -> Bool
 containsRed b c  = case M.lookup c (getMap b) of
@@ -72,27 +62,23 @@ containsRed b c  = case M.lookup c (getMap b) of
 -- with stacks) that are neighbors of the given coordinate
 neighbors :: Coordinate -> Board -> S.Set Coordinate
 neighbors c b = S.filter (nonempty b) (allNeighbors c)
--- neighbors c b = [Coordinate (x,y) | x <- [1 ..11], y<- [1..5],
---                                     M.member (Coordinate (x,y)) (getMap b),
---                                     validCoordinate (Coordinate (x,y)),
---                                     areNeighbors c (Coordinate (x,y))]
 
---UNTESTED
+-- | Find the component of nonempty spaces that a coordinate belongs to given a
+-- board.
 component :: Board -> Coordinate -> S.Set Coordinate
 component b c = aux b (S.fromList [c]) (neighbors c b)
+    -- Mutually recursive functions perform DFS to find all neighboring
+    -- coordinates of a component given unseen coordinates
   where
     aux :: Board -> S.Set Coordinate -> S.Set Coordinate -> S.Set Coordinate
     aux b component ns =
-      if S.null frontier
-        then component
-        else S.foldl'
-               (\base elt ->
-                  (elt `S.insert` base) `S.union`
-                  aux b base (neighbors (elt :: Coordinate) b))
-               component
-               frontier
-      where
-        frontier = ns S.\\ component
+      let frontier = ns S.\\ component
+       in S.foldl' addNewNeighbors component frontier
+
+    addNewNeighbors :: S.Set Coordinate -> Coordinate -> S.Set Coordinate
+    addNewNeighbors curr newCoord =
+      let updated = newCoord `S.insert` curr
+       in aux b updated (neighbors newCoord b)
 
 -- | Checks to see whether a coordinate has six neighbors. If so, it is
 -- not permitted to be moved.
@@ -132,7 +118,19 @@ calcWinner = undefined
 -- | Executes a move
 -- TODO: Error handling
 apply :: Move -> Board -> Board
-apply = undefined
+apply (Move c1 c2) b =
+  let newStack = innerstack b c1 ++ innerstack b c2
+      newM = 
+
+
+innerstack :: Board -> Coordinate -> [Piece]
+innerstack b = getStack . (getMap b M.!)
+
+place :: Board -> Piece -> Coordinate -> Board
+place b p c =
+  let newB = M.adjust (addToStack p) c (getMap b)
+      addToStack p (Stack s) = Stack (p : s)
+   in b {getMap = newB}
 
 -- | Determines which player goes next
 getNextTurn :: Move -> Board -> TurnState -> TurnState
@@ -145,7 +143,7 @@ nonempties b = S.filter (nonempty b) coordinates
 
 -- | Check if a coordinate on the board is nonempty
 nonempty :: Board -> Coordinate -> Bool
-nonempty b = not . null . getStack . (getMap b M.!)
+nonempty b = not . null . innerstack b
 
 -- | Counts empty spaces on the board, not including the discard pile
 countEmpty :: Board -> Int

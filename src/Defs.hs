@@ -16,7 +16,7 @@ newtype Path = Path {getPath :: [Coordinate]}
 
 type Component = S.Set Coordinate
 
-newtype Board = Board {getMap :: M.Map Coordinate Stack}
+data Board = Board {getMap :: M.Map Coordinate Stack, getDiscard :: Stack}
     deriving (Show)
 
 data Piece = Red | White | Black
