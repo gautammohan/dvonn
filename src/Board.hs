@@ -7,6 +7,7 @@
 module Board where
 
 import Data.Map as M hiding (null, foldr, filter, map)
+import Data.Monoid
 import qualified Data.Set as S
 import Defs
 import Data.List
@@ -36,7 +37,7 @@ validCoordinate c = c `elem` coordinates
 allNeighbors :: Coordinate -> S.Set Coordinate
 allNeighbors (Coordinate (x, y)) =
   S.fromList $
-
+  filter validCoordinate $
   map
     Coordinate
     [ (x + 1, y)
@@ -83,7 +84,18 @@ component b c = aux b (S.fromList [c]) (neighbors c b)
       let updated = newCoord `S.insert` curr
        in aux b updated (neighbors newCoord b)
 
-allComponents = undefined
+allComponents :: Board -> [S.Set Coordinate]
+allComponents b = aux [] coordinates
+  where
+    -- recursively find coordinates not in any component we have seen and add
+    -- its component to the list
+    aux :: [S.Set Coordinate] -> S.Set Coordinate -> [S.Set Coordinate]
+    aux l coords =
+      let unseen = coords S.\\ mconcat l
+       in if S.null unseen
+            then l
+            else let (c, cs) = S.deleteFindMin unseen
+                  in aux (component b c : l) cs
 
 -- | Checks to see whether a coordinate has six neighbors. If so, it is
 -- not permitted to be moved.
@@ -110,15 +122,15 @@ isSurrounded c b = length (neighbors c b) == 6
 -- TODO: Is it possible to have a tie?
 
 calcWinner :: Board -> Maybe Player
-calcWinner b = do 
+calcWinner b = do
     let remaining = S.map (innerstack b) (nonempties b)
-        whiteStacks = S.filter (\s -> head s == White) remaining 
+        whiteStacks = S.filter (\s -> head s == White) remaining
         blackStacks = S.filter (\s -> head s == Black) remaining
         white = concat whiteStacks
         black = concat blackStacks
-    if length white > length black then Just PWhite 
+    if length white > length black then Just PWhite
     else if length black > length white then Just PBlack
-    else Nothing     
+    else Nothing
 
 -- | Executes a move
 -- TODO: Error handling
@@ -140,8 +152,8 @@ discard b cs =
 
 cleanup :: Board -> Board
 cleanup b =
-  let emptyComponents = S.filter (hasRed b) (allComponents b)
-   in S.foldr (flip discard) b emptyComponents
+  let emptyComponents = filter (hasRed b) (allComponents b)
+   in foldr (flip discard) b emptyComponents
 
 innerstack :: Board -> Coordinate -> [Piece]
 innerstack b = getStack . (getMap b M.!)
