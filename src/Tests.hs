@@ -1,16 +1,19 @@
 -------------------------------------------------------------------------------
 -- Authors: Emily Diana and Gautam Mohan
--- Date: 
+-- Date:
 -- Assigment: Final Project
 -------------------------------------------------------------------------------
 
 module Tests where
 
-import Test.HUnit
+import Test.HUnit hiding (Path)
 import Test.QuickCheck
+import Data.Function
 import Data.List
+import Data.Monoid
 import Control.Monad
 import Data.Map as M hiding (null)
+import qualified Data.Set as S
 
 import Defs
 import Board
@@ -24,11 +27,11 @@ main = do
    _ <- runTestTT (TestList [tBlock, tMove])
    quickCheck prop_coordinate_generator
    return ()
-   
+
 --quickCheck $ prop_no_disconnected_pieces emptyBoard
 
 -- TODO: Generalize beyond emptyBoard once we have full arbitrary intances
---  quickCheck $ prop_empty_increase 
+--  quickCheck $ prop_empty_increase
 --       (Trace [])
 -------------------------------------------------------------------------------
 -- A framework for randomized testing
@@ -51,52 +54,54 @@ instance Arbitrary Coordinate where
           | otherwise = rand `mod` 5
 
 getRandNeighbor :: Coordinate -> Gen Coordinate
-getRandNeighbor c = do
-  d <- oneof $ return . Coordinate <$>
-    [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, -1)]
-  return $ c + d
+getRandNeighbor c = oneof $ return <$> S.toList (allNeighbors c)
 
-newtype Path = Path [Coordinate]
 
--- TODO figure out how to use this to test the neighbor property 
+-- | Return a random filled board (all pieces are placed)
+filledBoard :: Gen Board
+filledBoard = do
+  cs <- shuffle $ S.toList coordinates
+  let ps =
+        Stack . (: []) <$>
+        replicate 3 Red ++ replicate 23 Black ++ replicate 23 White
+  let m = M.fromList $ zip cs ps
+  return $ Board m (Stack [])
+
+newtype Path = Path { getPath :: [Coordinate]}
+
+-- | A path is a sequence of adjacent coordinates without a cycle
+instance Arbitrary Path where
+  arbitrary = undefined
+
+-- TODO figure out how to use this to test the neighbor property
 -- aka get it working
-instance Arbitrary Tests.Path where
-   arbitrary = undefined
---     where
---       check :: Gen Coordinate -> Maybe (Gen Coordinate, Gen Coordinate)
---       check c = do
---         coord <- c
---         if validCoordinate coord then
---           Just (c, getRandNeighbor c)
---           else Nothing
---       -- check c = if validCoordinate c then return 
---       (return c,getRandNeighbor c) else Nothing
 
-newtype Trace = Trace [Board]
+newtype Trace = Trace { getTrace :: [Board] } deriving (Show)
 
 instance Arbitrary Trace where
-   arbitrary = undefined
---   arbitrary = do
---     b <- arbitrary :: Gen Board
---     helper b
-
-
-helper :: Board -> Gen [Board]
-helper board = do
-  let allmoves = getPossibleMoves board
-  if null allmoves
-    then return [board]
-    else do
-    move <- oneof $ return <$> allmoves
-    let newboard = apply move board
-    frequency [ (1,return [board,newboard])
-              , (3, do
-                    nextboards <- helper newboard
-                    return $ board : nextboards)]
+  arbitrary = Trace <$> (filledBoard >>= helper)
+    where
+      helper :: Board -> Gen [Board]
+      helper board = do
+        let allmoves = getPossibleMoves board
+        if null allmoves
+          then return [board]
+          else do
+            move <- oneof $ return <$> allmoves
+            let newboard = apply move board
+            (board :) <$>
+              frequency [(1, return [newboard]), (3, helper newboard)]
 
 -------------------------------------------------------------------------------
 -- QuickCheck instances for game properties
 -------------------------------------------------------------------------------
+
+checkBetween :: (a -> a -> Bool) -> [a] -> Bool
+checkBetween pred l = getAll $ foldMap (All . uncurry pred) pairs
+  where
+    pairs = zip l (tail l)
+
+checkTrace pred = checkBetween pred . getTrace
 
 -- Our Arbitrary Coordinate instance should only generate valid coordinates
 prop_coordinate_generator :: Coordinate -> Bool
@@ -110,10 +115,12 @@ prop_coordinate_generator = validCoordinate
 prop_no_hole :: Board -> Bool
 prop_no_hole b = undefined
 
--- In the move phase, the total number of pieces on the board not including 
+-- In the move phase, the total number of pieces on the board not including
 -- the discard pile must be monotonically decreasing
 prop_inplay_decrease :: Trace -> Bool
-prop_inplay_decrease = undefined
+prop_inplay_decrease = checkTrace pred
+  where
+    pred = (<) `on` numActivePieces
 
 -- Over the course of the game, the number of totally surrounded pieces
 -- decreases monotonically
@@ -139,7 +146,7 @@ prop_empty_increase (Trace l) = sort l' == l' && l' == nub l'
 tBlock :: Test
 tBlock = TestList [testEmptyBoard, testValidCoordinate]
 
--- TODO : Check that each element is empty, too? 
+-- TODO : Check that each element is empty, too?
 testEmptyBoard :: Test
 testEmptyBoard = "empty" ~: TestList [
   length (M.toList $ getMap emptyBoard) ~?= 50]
@@ -214,7 +221,7 @@ testPlacePiece = "placePiece" ~: TestList []
 testGetPossibleMoves :: Test
 testGetPossibleMoves = "getPossibleMoves" ~: TestList []
 
-testParseMove :: Test 
+testParseMove :: Test
 testParseMove = "testParseMove" ~: TestList []
 
 -------------------------------------------------------------------------------
@@ -224,4 +231,3 @@ testParseMove = "testParseMove" ~: TestList []
 -------------------------------------------------------------------------------
 -- The following tests verify the IO functionality
 -------------------------------------------------------------------------------
-

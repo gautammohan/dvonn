@@ -183,3 +183,10 @@ nonempty b = not . null . innerstack b
 -- | Counts empty spaces on the board, not including the discard pile
 countEmpty :: Board -> Int
 countEmpty = length . nonempties
+
+numActivePieces :: Board -> Int
+numActivePieces =
+  getSum . foldMap (Sum . length . getStack . snd) . M.toList . getMap
+
+numDiscardedPieces :: Board -> Int
+numDiscardedPieces = length . getStack . getDiscard

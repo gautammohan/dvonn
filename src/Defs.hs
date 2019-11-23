@@ -12,8 +12,6 @@ import Data.Set as S
 newtype Coordinate = Coordinate (Int, Int)
     deriving (Show, Eq, Ord)
 
-newtype Path = Path {getPath :: [Coordinate]}
-
 type Component = S.Set Coordinate
 
 data Board = Board {getMap :: M.Map Coordinate Stack, getDiscard :: Stack}
