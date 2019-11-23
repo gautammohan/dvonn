@@ -96,11 +96,11 @@ instance Arbitrary Trace where
 -- QuickCheck instances for game properties
 -------------------------------------------------------------------------------
 
+-- | Given a sequence [a1,a2,a3], check that a property p holds for all adjacent pairs, i.e. (p a2 a1) && p (a3 a2)
 checkBetween :: (a -> a -> Bool) -> [a] -> Bool
 checkBetween pred l = getAll $ foldMap (All . uncurry pred) pairs
   where
     pairs = zip l (tail l)
-
 checkTrace pred = checkBetween pred . getTrace
 
 -- Our Arbitrary Coordinate instance should only generate valid coordinates
@@ -115,23 +115,26 @@ prop_coordinate_generator = validCoordinate
 prop_no_hole :: Board -> Bool
 prop_no_hole b = undefined
 
--- In the move phase, the total number of pieces on the board not including
--- the discard pile must be monotonically decreasing
+-- In the move phase, the total number of pieces on the board not including the
+-- discard pile must be monotonically decreasing. i.e. given b1 --> b2,
+-- numActive b1 > numActive b2
 prop_inplay_decrease :: Trace -> Bool
-prop_inplay_decrease = checkTrace pred
-  where
-    pred = (<) `on` numActivePieces
+prop_inplay_decrease = checkTrace ((>) `on` numActivePieces)
 
 -- Over the course of the game, the number of totally surrounded pieces
 -- decreases monotonically
 prop_surrounded_decrease :: Trace -> Bool
-prop_surrounded_decrease = undefined
+prop_surrounded_decrease = checkTrace ((>=) `on` numSurrounded)
+  where
+    numSurrounded b = S.size $ S.filter (isSurrounded b) coordinates
 
 -- The number of pieces of each color between the board and discard pile stay
 -- consistent after the placing phase. I.e., check that we do not lose any
 -- pieces
-prop_consistent_sum :: Board -> Bool
-prop_consistent_sum = undefined
+prop_consistent_sum :: Trace -> Bool
+prop_consistent_sum = checkTrace ((==) `on` totalPieces)
+  where
+    totalPieces b = numDiscardedPieces b + numActivePieces b
 
 -- The number of empty spaces on the board increases by at least 1 each turn
 prop_empty_increase :: Trace -> Bool

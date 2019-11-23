@@ -50,7 +50,7 @@ playerOwns p (Stack s) = case p of
 validMove :: Board -> Move -> Bool
 validMove b m = case M.lookup (start m) (getMap b) of
    Just (Stack s)  -> isOnBoard m && isLinear m && 
-              not (isSurrounded (start m) b) &&
+              not (isSurrounded b (start m)) &&
               distance m == length s && playerOwns (player m) (Stack s)
    _       -> False
 

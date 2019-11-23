@@ -99,8 +99,8 @@ allComponents b = aux [] coordinates
 
 -- | Checks to see whether a coordinate has six neighbors. If so, it is
 -- not permitted to be moved.
-isSurrounded :: Coordinate -> Board -> Bool
-isSurrounded c b = length (neighbors c b) == 6
+isSurrounded :: Board -> Coordinate -> Bool
+isSurrounded b c = length (neighbors c b) == 6
 
 -- | Starting at coordinate c, determines whether there is a path through
 -- active coordinates to a coordinate containing a red piece. In other
