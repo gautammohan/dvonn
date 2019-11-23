@@ -135,7 +135,10 @@ calcWinner b = do
 -- | Executes a move
 -- TODO: Error handling
 apply :: Move -> Board -> Board
-apply = undefined
+apply (Move _ c1 c2) b =
+  let b' = combine b c1 c2
+      b'' = cleanup b'
+   in b''
 
 combine :: Board -> Coordinate -> Coordinate -> Board
 combine b c1 c2 =
