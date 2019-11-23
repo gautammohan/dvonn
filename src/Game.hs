@@ -69,7 +69,7 @@ phase1 = sequence_ $ intersperse takeTurn (map updateTurn phase1Turns)
       [PlacingRed, PlacingRed, PlacingRed] ++
       take 46 (cycle [PlacingBlack, PlacingWhite])
 
-phase2 :: Game Player
+phase2 :: Game (Maybe Player)
 phase2 = do
   takeTurn
   (GameState b t _) <- get
@@ -77,7 +77,7 @@ phase2 = do
     End -> return $ calcWinner b
     _ -> phase2
 
-dvonn :: Game Player
+dvonn :: Game (Maybe Player)
 dvonn = phase1 >> modify (\gs -> gs {phase = Phase2}) >> phase2
 
 evalGame :: GameState -> Game a -> IO (Either GameError (a, GameState))

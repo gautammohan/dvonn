@@ -12,6 +12,10 @@ import Board
 import Data.Set as S
 import Defs
 
+--{-# OPTIONS_GHC -Wincomplete-patterns #-}
+--{-# Language ScopedTypeVariables, FlexibleInstances, DeriveFoldable #-}
+--{-# LANGUAGE TypeApplications #-}
+
 -- | Only linear moves are permitted
 isLinear :: Move -> Bool
 isLinear m = case end m - start m of
@@ -64,7 +68,9 @@ validMove b m = case M.lookup (start m) (getMap b) of
 getPossibleMoves :: Board -> [Move]
 getPossibleMoves b = do
    let candidates  = S.toList $ nonempties b 
-       white_moves = [m@(Move (Player PWhite) (start x) (end y)) | x <- candidates, y <- candidates,
-                                                       validMove b m]
-   undefined
+       white_moves = [Move PWhite x y | x <- candidates, y <- candidates,
+                        validMove b (Move PWhite x y)]
+       black_moves = [Move PBlack x y | x <- candidates, y <- candidates,
+                        validMove b (Move PBlack x y)]
+   white_moves ++ black_moves
 
