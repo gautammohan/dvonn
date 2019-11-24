@@ -24,7 +24,7 @@ import Move
 -------------------------------------------------------------------------------
 main :: IO ()
 main = do
-   _ <- runTestTT (TestList [tBlock, tMove])
+   _ <- runTestTT (TestList [tBoard, tMove])
    quickCheck prop_coordinate_generator
    return ()
 
@@ -145,14 +145,16 @@ prop_empty_increase (Trace l) = sort l' == l' && l' == nub l'
 -------------------------------------------------------------------------------
 -- The following tests verify basic functionality in the Board module
 -------------------------------------------------------------------------------
+smallRedBoard = place emptyBoard Red (Coordinate (3,3))
 
-tBlock :: Test
-tBlock = TestList [testEmptyBoard, testValidCoordinate]
+tBoard :: Test
+tBoard = TestList [testEmptyBoard, testValidCoordinate, testContainsRed,
+                   testAllNeighbors, testNeighborOf, testHasRed]
 
 -- TODO : Check that each element is empty, too?
 testEmptyBoard :: Test
 testEmptyBoard = "empty" ~: TestList [
-  length (M.toList $ getMap emptyBoard) ~?= 50]
+  length (M.toList $ getMap emptyBoard) ~?= 49]
 
 testValidCoordinate :: Test
 testValidCoordinate = "validCoordinate" ~: TestList [
@@ -160,18 +162,31 @@ testValidCoordinate = "validCoordinate" ~: TestList [
   validCoordinate (Coordinate (1,5)) ~?= False,
   validCoordinate (Coordinate (3,3)) ~?= True]
 
---testAreNeighbors :: Test
---testAreNeighbors = "areNeighbors" ~: TestList [
---  areNeighbors (Coordinate (11,1)) (Coordinate (11,2)) ~?= True,
---  areNeighbors (Coordinate (3,4)) (Coordinate (4,3)) ~?= False,
---  areNeighbors (Coordinate (-1,-1)) (Coordinate (1,1)) ~?= False,
---  areNeighbors (Coordinate (11,3)) (Coordinate (11,4)) ~?= False]
-
 testContainsRed :: Test
-testContainsRed = "containsRed" ~: TestList []
+testContainsRed = "containsRed" ~: TestList [
+    containsRed smallRedBoard (Coordinate (3,3)) ~?= True,
+    containsRed smallRedBoard (Coordinate (3,2)) ~?= False,
+    containsRed smallRedBoard (Coordinate (1,5)) ~?= False]
+ 
+testHasRed :: Test
+testHasRed = "hasRed" ~: TestList [
+    hasRed smallRedBoard (S.fromList [Coordinate (3,3), Coordinate (1,1)]) ~?= True,
+    hasRed emptyBoard (S.fromList[Coordinate (3,3)]) ~?= False]
 
-testNeighbors :: Test
-testNeighbors = "neighbors" ~: TestList []
+testAllNeighbors :: Test
+testAllNeighbors = "neighbors" ~: TestList [
+    allNeighbors (Coordinate (-1,-1)) ~?= S.fromList [],
+    allNeighbors (Coordinate (11,3)) ~?= 
+      S.fromList [Coordinate (10,2), Coordinate (10,3), Coordinate (11,2)],
+    allNeighbors (Coordinate (7,4)) ~?= 
+      S.fromList [Coordinate (6,3), Coordinate (6,4), Coordinate (7,3),
+                Coordinate (7,5), Coordinate (8,4), Coordinate (8,5)]]
+
+testNeighborOf :: Test
+testNeighborOf = "neighborOf" ~: TestList [
+   neighborOf (Coordinate (5,5)) (Coordinate (5,4)) ~?= True,
+   neighborOf (Coordinate (5,4)) (Coordinate (4,5)) ~?= False,
+   neighborOf (Coordinate (5,5)) (Coordinate (5,6)) ~?= False]
 
 testSurrounded :: Test
 testSurrounded = "surrounded" ~: TestList []

@@ -29,7 +29,7 @@ emptyBoard =
   where
     l = S.toList coordinates
 
--- | Determines if a coordinate is on the board, excluding the discard pile
+-- | Determines if a coordinate is on the board
 validCoordinate :: Coordinate -> Bool
 validCoordinate c = c `elem` coordinates
 
@@ -50,7 +50,7 @@ allNeighbors (Coordinate (x, y)) =
 -- | c1 `neighborOf` c2 implies that c1 and c2 are neighbors since this relation
 -- is reflexive
 neighborOf :: Coordinate -> Coordinate -> Bool
-neighborOf c1 c2 = c1 `S.member` allNeighbors c2
+neighborOf c1 c2 = validCoordinate c2 && c1 `S.member` allNeighbors c2
 
 -- | Determines if a coordinate has a stack with a red piece
 containsRed :: Board -> Coordinate -> Bool
@@ -59,7 +59,7 @@ containsRed b c  = case M.lookup c (getMap b) of
        _  -> False
 
 hasRed :: Board -> S.Set Coordinate -> Bool
-hasRed b cs = not . S.null $ S.map (containsRed b) cs
+hasRed b cs = S.member True $ S.map (containsRed b) cs
 
 -- | Constructs the list of all active coordinates (i.e., coordinates
 -- with stacks) that are neighbors of the given coordinate
