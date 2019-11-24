@@ -250,16 +250,25 @@ testNumActivePieces = "numActivePiece" ~: TestList [
 -------------------------------------------------------------------------------
 
 tMove :: Test
-tMove = TestList [testPlayerOwns]
+tMove = TestList [testPlayerOwns, testIsLinear, testIsOnBoard, testDistance]
 
+--Allows for invalid cordinates??
 testIsLinear :: Test
-testIsLinear = "isLinear" ~: TestList []
+testIsLinear = "isLinear" ~: TestList [
+   isLinear (Move PWhite (Coordinate (1,1)) (Coordinate (2,2))) ~?= True,
+   isLinear (Move PBlack (Coordinate (1,1)) (Coordinate (1,2))) ~?= True,
+   isLinear (Move PBlack (Coordinate (2,1)) (Coordinate (1,2))) ~?= False]  
 
 testIsOnBoard :: Test
-testIsOnBoard = "isOnBoard" ~: TestList []
+testIsOnBoard = "isOnBoard" ~: TestList [
+   isOnBoard (Move PWhite (Coordinate (1,1)) (Coordinate (2,2))) ~?= True,
+   isOnBoard (Move PWhite (Coordinate (1,5)) (Coordinate (2,2))) ~?= False,
+   isOnBoard (Move PWhite (Coordinate (1,1)) (Coordinate (12,2))) ~?= False]
 
 testDistance :: Test
-testDistance = "distance" ~: TestList []
+testDistance = "distance" ~: TestList [
+   distance (Move PWhite (Coordinate (1,1)) (Coordinate (2,2))) ~?= 1,
+   distance (Move PWhite (Coordinate (1,1)) (Coordinate (1,3))) ~?= 2]
 
 testPlayerOwns :: Test
 testPlayerOwns = "playerOwns" ~: TestList [
@@ -268,9 +277,6 @@ testPlayerOwns = "playerOwns" ~: TestList [
 
 testValidMove :: Test
 testValidMove = "validMove" ~: TestList []
-
-testPlacePiece :: Test
-testPlacePiece = "placePiece" ~: TestList []
 
 testGetPossibleMoves :: Test
 testGetPossibleMoves = "getPossibleMoves" ~: TestList []
