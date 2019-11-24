@@ -58,6 +58,7 @@ containsRed b c  = case M.lookup c (getMap b) of
        Just (Stack s) -> Red `elem` s
        _  -> False
 
+-- | Determines if there is a red piece in a set of coordinates
 hasRed :: Board -> S.Set Coordinate -> Bool
 hasRed b cs = S.member True $ S.map (containsRed b) cs
 
@@ -177,7 +178,7 @@ nonempty b = not . null . innerstack b
 
 -- | Counts empty spaces on the board, not including the discard pile
 countEmpty :: Board -> Int
-countEmpty = length . nonempties
+countEmpty b = length (S.toList (S.filter (not . nonempty b) coordinates))
 
 numActivePieces :: Board -> Int
 numActivePieces =
