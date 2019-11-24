@@ -146,10 +146,20 @@ prop_empty_increase (Trace l) = sort l' == l' && l' == nub l'
 -- The following tests verify basic functionality in the Board module
 -------------------------------------------------------------------------------
 smallRedBoard = place emptyBoard Red (Coordinate (3,3))
+surroundedBoard = do
+  let b1 = smallRedBoard
+      b2 = place b1 White (Coordinate (3,4))
+      b3 = place b2 Black (Coordinate (3,2))
+      b4 = place b3 Red   (Coordinate (4,3))
+      b5 = place b4 White (Coordinate (2,3))
+      b6 = place b5 Black (Coordinate (2,2))
+  place b6 Red (Coordinate (4,4))
 
 tBoard :: Test
 tBoard = TestList [testEmptyBoard, testValidCoordinate, testContainsRed,
-                   testAllNeighbors, testNeighborOf, testHasRed]
+                   testAllNeighbors, testNeighborOf, testHasRed, testSurrounded,
+                   testNeighbors, testNonempties, testNonempty, testCountEmpty,
+                   testNumActivePieces]
 
 -- TODO : Check that each element is empty, too?
 testEmptyBoard :: Test
@@ -189,8 +199,17 @@ testNeighborOf = "neighborOf" ~: TestList [
    neighborOf (Coordinate (5,5)) (Coordinate (5,6)) ~?= False]
 
 testSurrounded :: Test
-testSurrounded = "surrounded" ~: TestList []
+testSurrounded = "surrounded" ~: TestList [
+  isSurrounded smallRedBoard (Coordinate (3,3)) ~?= False,
+  isSurrounded surroundedBoard (Coordinate (3,3)) ~?= True,
+  isSurrounded surroundedBoard (Coordinate (2,2)) ~?= False]
 
+testNeighbors :: Test
+testNeighbors = "neighbors" ~: TestList [
+  neighbors (Coordinate (3,3)) emptyBoard ~?= S.fromList [],
+  neighbors (Coordinate (3,3)) surroundedBoard ~?=
+     S.fromList [Coordinate (2,2), Coordinate (2,3), Coordinate (3,2),
+                 Coordinate (3,4), Coordinate (4,3), Coordinate (4,4)]]
 testConnected :: Test
 testConnected = "connected" ~: TestList []
 
@@ -203,11 +222,28 @@ testApply = "apply" ~: TestList []
 testGetNextTurn :: Test
 testGetNextTurn = "getNextTurn" ~: TestList []
 
-testNonEmpty :: Test
-testNonEmpty = "testNonEmpty" ~: TestList []
+testNonempties :: Test
+testNonempties = "testNonEmpty" ~: TestList [
+   length (nonempties surroundedBoard) ~?= 7,
+   length (nonempties emptyBoard) ~?= 0]
+
+testNonempty :: Test
+testNonempty = "nonempty" ~: TestList [
+   nonempty emptyBoard (Coordinate (1,1)) ~?= False,
+   nonempty surroundedBoard (Coordinate (1,1)) ~?= False,
+   nonempty surroundedBoard (Coordinate (3,3))~?= True]
 
 testCountEmpty :: Test
-testCountEmpty = "testCountEmpty" ~: TestList []
+testCountEmpty = "testCountEmpty" ~: TestList [
+   countEmpty emptyBoard ~?= 49,
+   countEmpty smallRedBoard ~?= 48,
+   countEmpty surroundedBoard ~?= 42]
+
+testNumActivePieces :: Test
+testNumActivePieces = "numActivePiece" ~: TestList [
+   numActivePieces emptyBoard ~?= 0,
+   numActivePieces smallRedBoard ~?= 1,
+   numActivePieces surroundedBoard ~?= 7]
 
 -------------------------------------------------------------------------------
 -- The following tests verify basic functionality in the Move module
