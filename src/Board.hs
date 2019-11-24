@@ -12,7 +12,6 @@ import qualified Data.Set as S
 import Defs
 import Data.List
 
-
 coordinates :: S.Set Coordinate
 coordinates = S.fromList $
   [Coordinate (x, y) | x <- [3 .. 9], y <- [1 .. 5]] ++
@@ -166,10 +165,6 @@ place b p c =
   let newB = M.adjust (addToStack p) c (getMap b)
       addToStack p (Stack s) = Stack (p : s)
    in b {getMap = newB}
-
--- | Determines which player goes next
-getNextTurn :: Move -> Board -> TurnState -> TurnState
-getNextTurn = undefined
 
 -- | Returns list of nonempty spaces on board,  not including discard pile
 --TODO Should we include discard pile here???

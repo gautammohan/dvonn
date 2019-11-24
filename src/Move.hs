@@ -54,6 +54,24 @@ validMove b m = case M.lookup (start m) (getMap b) of
               distance m == length s && playerOwns (player m) (Stack s)
    _       -> False
 
+--We only need move or Turnstate
+getNextTurn :: Board -> TurnState -> TurnState
+getNextTurn b t = do
+   let canMoveBlack = not $ Data.List.null [m' | m' <- getPossibleMoves b, player m' == PBlack]
+       canMoveWhite = not $ Data.List.null [m' | m' <- getPossibleMoves b, player m' == PWhite]
+   case t of
+      MoveWhite | canMoveBlack -> MoveBlack
+                | canMoveWhite -> MoveWhite 
+                | otherwise    -> End
+      MoveBlack | canMoveWhite -> MoveWhite 
+                | canMoveBlack -> MoveBlack 
+                | otherwise    -> End
+      Start -> PlacingRed
+      PlacingRed -> undefined
+      PlacingWhite -> undefined
+      PlacingBlack -> undefined
+      End -> undefined 
+
 -- | Places a piece on an empty coordinate in the first phase of the game
 --
 --TODO: I'm not sure how to fill this in with the Game Monad. This is something
@@ -73,4 +91,14 @@ getPossibleMoves b = do
        black_moves = [Move PBlack x y | x <- candidates, y <- candidates,
                         validMove b (Move PBlack x y)]
    white_moves ++ black_moves
+
+
+
+
+
+
+
+
+
+
 

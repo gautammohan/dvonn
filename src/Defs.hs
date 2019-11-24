@@ -47,7 +47,7 @@ data GamePhase = Phase1 | Phase2
 
 data Player
   = PBlack
-  | PWhite deriving (Show)
+  | PWhite deriving (Show, Eq)
 
 
 data Move = Move
