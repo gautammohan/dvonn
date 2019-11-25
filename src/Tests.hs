@@ -76,8 +76,8 @@ instance Arbitrary Path where
 -- TODO figure out how to use this to test the neighbor property
 -- aka get it working
 
-newtype Dvonn = Dvonn [Board]
-newtype Mini = Mini [Board]
+newtype Dvonn = Dvonn [Board] deriving (Show)
+newtype Mini = Mini [Board] deriving (Show)
 
 fill :: [Piece] -> [Coordinate] -> Gen Board
 fill ps cs = do
@@ -116,16 +116,19 @@ instance Arbitrary Mini where
 -- QuickCheck instances for game properties
 -------------------------------------------------------------------------------
 
+runMini :: ([Board] -> Bool) -> Mini -> Bool
+runMini prop (Mini b) = prop b
+
 -- | Given a sequence [a1,a2,a3], check that a property p holds for all adjacent pairs, i.e. (p a2 a1) && p (a3 a2)
 checkBetween :: (a -> a -> Bool) -> [a] -> Bool
 checkBetween pred l = getAll $ foldMap (All . uncurry pred) pairs
   where
     pairs = zip l (tail l)
-checkTrace pred = checkBetween pred
+checkTrace = checkBetween
 
 -- Our Arbitrary Coordinate instance should only generate valid coordinates
 prop_coordinate_generator :: Coordinate -> Bool
-prop_coordinate_generator = undefined --validCoordinate
+prop_coordinate_generator = validCoordinate emptyDvonn
 
 -- All pieces on the board must have a path to a red piece
 --prop_no_disconnected_pieces :: Board -> Bool
@@ -310,7 +313,7 @@ testValidMove = "validMove" ~: TestList []
 
 testGetPossibleMoves :: Test
 testGetPossibleMoves = "getPossibleMoves" ~: TestList [
-  getPossibleMoves emptyBoard ~?= [],
+  getPossibleMoves emptyDvonn ~?= [],
   getPossibleMoves smallRedBoard ~?= [],
   length (getPossibleMoves surroundedBoard) ~?= 12 ]
 
