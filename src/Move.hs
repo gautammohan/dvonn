@@ -21,8 +21,8 @@ isLinear m = case end m - start m of
 
 -- | As of now, we cannot move a stack to a place off the board.
 -- TODO: Adjust this when handling discards?
-isOnBoard :: Move -> Bool
-isOnBoard m = validCoordinate (start m) && validCoordinate (end m)
+isOnBoard :: Board -> Move -> Bool
+isOnBoard b m = validCoordinate b (start m) && validCoordinate b (end m)
 
 -- | Calculates height of stack on a coordinate, which controls
 -- how many spaces that stack must be moved.
@@ -45,7 +45,7 @@ playerOwns p (Stack s) = case p of
 --  5. The player owns the stack he or she proposes to move
 validMove :: Board -> Move -> Bool
 validMove b m = case M.lookup (start m) (getMap b) of
-   Just (Stack s)  -> isOnBoard m && isLinear m && 
+   Just (Stack s)  -> isOnBoard b m && isLinear m &&
               not (isSurrounded b (start m)) &&
               distance m == length s && playerOwns (player m) (Stack s)
    _       -> False
@@ -82,20 +82,9 @@ getNextTurn b p = do
 --
 getPossibleMoves :: Board -> [Move]
 getPossibleMoves b = do
-   let candidates  = S.toList $ nonempties b 
+   let candidates  = S.toList $ nonempties b
        white_moves = [Move PWhite x y | x <- candidates, y <- candidates,
                         validMove b (Move PWhite x y)]
        black_moves = [Move PBlack x y | x <- candidates, y <- candidates,
                         validMove b (Move PBlack x y)]
    white_moves ++ black_moves
-
-
-
-
-
-
-
-
-
-
-

@@ -6,8 +6,8 @@
 
 module Defs where
 
-import Data.Map as M
-import Data.Set as S
+import qualified Data.Map as M
+import qualified Data.Set as S
 
 newtype Coordinate = Coordinate (Int, Int)
     deriving (Show, Eq, Ord)
@@ -16,6 +16,25 @@ type Component = S.Set Coordinate
 
 data Board = Board {getMap :: M.Map Coordinate Stack, getDiscard :: Stack}
     deriving (Show)
+
+-- | Adds all game coordinates, to a map and initializes each value to an empty
+-- stack
+emptyBoard :: [Coordinate] -> Board
+emptyBoard coordinates =
+  Board
+    { getDiscard = Stack []
+    , getMap = foldr (\x acc -> M.insert x (Stack []) acc) M.empty coordinates
+    }
+
+emptyDvonn :: Board
+emptyDvonn =
+  emptyBoard $
+  [Coordinate (x, y) | x <- [3 .. 9], y <- [1 .. 5]] ++
+  [Coordinate (x, y) | x <- [2, 10], y <- [1 .. 4]] ++
+  [Coordinate (x, y) | x <- [1, 11], y <- [1 .. 3]]
+
+emptyMini :: Board
+emptyMini = emptyBoard [Coordinate (x, y) | x <- [1 .. 3], y <- [1 .. 3]]
 
 data Piece = Red | White | Black
     deriving (Show, Eq, Ord)

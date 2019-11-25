@@ -12,31 +12,22 @@ import qualified Data.Set as S
 import Defs
 import Data.List
 
-coordinates :: S.Set Coordinate
-coordinates = S.fromList $
-  [Coordinate (x, y) | x <- [3 .. 9], y <- [1 .. 5]] ++
-  [Coordinate (x, y) | x <- [2, 10], y <- [1 .. 4]] ++
-  [Coordinate (x, y) | x <- [1, 11], y <- [1 .. 3]]
-
--- | Adds all game coordinates, to a map and initializes each value to an empty
--- stack
-emptyBoard :: Board
-emptyBoard =
-  Board
-    { getDiscard = Stack []
-    , getMap = foldr (\x acc -> M.insert x (Stack []) acc) M.empty l
-    }
-  where
-    l = S.toList coordinates where
+coordinates :: Board -> S.Set Coordinate
+coordinates = S.fromList . keys . getMap
 
 -- | Determines if a coordinate is on the board
-validCoordinate :: Coordinate -> Bool
-validCoordinate c = c `elem` coordinates
+validCoordinate :: Board -> Coordinate -> Bool
+validCoordinate b = (`elem` coordinates b)
 
-allNeighbors :: Coordinate -> S.Set Coordinate
-allNeighbors (Coordinate (x, y)) =
+validDvonnCoordinate :: Coordinate -> Bool
+validDvonnCoordinate = validCoordinate (emptyDvonn)
+validMiniCoordinate :: Coordinate -> Bool
+validMiniCoordinate = validCoordinate (emptyMini)
+
+allNeighbors :: Board -> Coordinate -> S.Set Coordinate
+allNeighbors b (Coordinate (x, y)) =
   S.fromList $
-  filter validCoordinate $
+  filter (validCoordinate b) $
   map
     Coordinate
     [ (x + 1, y)
@@ -49,8 +40,8 @@ allNeighbors (Coordinate (x, y)) =
 
 -- | c1 `neighborOf` c2 implies that c1 and c2 are neighbors since this relation
 -- is reflexive
-neighborOf :: Coordinate -> Coordinate -> Bool
-neighborOf c1 c2 = validCoordinate c2 && c1 `S.member` allNeighbors c2
+neighborOf :: Board -> Coordinate -> Coordinate -> Bool
+neighborOf b c1 c2 = validCoordinate b c2 && c1 `S.member` allNeighbors b c2
 
 -- | Determines if a coordinate has a stack with a red piece
 containsRed :: Board -> Coordinate -> Bool
@@ -65,7 +56,7 @@ hasRed b cs = S.member True $ S.map (containsRed b) cs
 -- | Constructs the list of all active coordinates (i.e., coordinates
 -- with stacks) that are neighbors of the given coordinate
 neighbors :: Coordinate -> Board -> S.Set Coordinate
-neighbors c b = S.filter (nonempty b) (allNeighbors c)
+neighbors c b = S.filter (nonempty b) (allNeighbors b c)
 
 -- | Find the component of nonempty spaces that a coordinate belongs to given a
 -- board.
@@ -85,7 +76,7 @@ component b c = aux b (S.fromList [c]) (neighbors c b)
        in aux b updated (neighbors newCoord b)
 
 allComponents :: Board -> [S.Set Coordinate]
-allComponents b = aux [] coordinates
+allComponents b = aux [] (coordinates b)
   where
     -- recursively find coordinates not in any component we have seen and add
     -- its component to the list
@@ -170,7 +161,7 @@ place b p c =
 -- | Returns list of nonempty spaces on board,  not including discard pile
 --TODO Should we include discard pile here???
 nonempties :: Board -> S.Set Coordinate
-nonempties b = S.filter (nonempty b) coordinates
+nonempties b = S.filter (nonempty b) (coordinates b)
 
 -- | Check if a coordinate on the board is nonempty
 nonempty :: Board -> Coordinate -> Bool
@@ -178,7 +169,7 @@ nonempty b = not . null . innerstack b
 
 -- | Counts empty spaces on the board, not including the discard pile
 countEmpty :: Board -> Int
-countEmpty b = length (S.toList (S.filter (not . nonempty b) coordinates))
+countEmpty b = length (S.toList (S.filter (not . nonempty b) (coordinates b)))
 
 numActivePieces :: Board -> Int
 numActivePieces =
