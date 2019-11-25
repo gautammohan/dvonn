@@ -35,7 +35,7 @@ executeMove m = do
   if validMove b m
     then do
       let newB = apply m b
-          newT = getNextTurn newB t
+          newT = getNextTurn newB (player m) 
       modify (\gs -> gs {turn = newT, board = newB})
     else throwError InvalidMove
 

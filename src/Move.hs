@@ -12,10 +12,6 @@ import Board
 import Data.Set as S
 import Defs
 
---{-# OPTIONS_GHC -Wincomplete-patterns #-}
---{-# Language ScopedTypeVariables, FlexibleInstances, DeriveFoldable #-}
---{-# LANGUAGE TypeApplications #-}
-
 -- | Only linear moves are permitted
 isLinear :: Move -> Bool
 isLinear m = case end m - start m of
@@ -55,22 +51,23 @@ validMove b m = case M.lookup (start m) (getMap b) of
    _       -> False
 
 --We only need move or Turnstate
-getNextTurn :: Board -> TurnState -> TurnState
-getNextTurn b t = do
+getNextTurn :: Board -> Player -> TurnState
+getNextTurn b p = do
    let canMoveBlack = not $ Data.List.null [m' | m' <- getPossibleMoves b, player m' == PBlack]
        canMoveWhite = not $ Data.List.null [m' | m' <- getPossibleMoves b, player m' == PWhite]
-   case t of
-      MoveWhite | canMoveBlack -> MoveBlack
-                | canMoveWhite -> MoveWhite 
-                | otherwise    -> End
-      MoveBlack | canMoveWhite -> MoveWhite 
-                | canMoveBlack -> MoveBlack 
-                | otherwise    -> End
-      Start -> PlacingRed
-      PlacingRed -> undefined
-      PlacingWhite -> undefined
-      PlacingBlack -> undefined
-      End -> undefined 
+   case p of
+      PWhite | canMoveBlack -> MoveBlack
+             | canMoveWhite -> MoveWhite 
+             | otherwise    -> End
+      PBlack | canMoveWhite -> MoveWhite 
+             | canMoveBlack -> MoveBlack 
+             | otherwise    -> End
+
+--      Start -> PlacingRed
+--      PlacingRed -> undefined
+--      PlacingWhite -> undefined
+--      PlacingBlack -> undefined
+--      End -> undefined 
 
 -- | Places a piece on an empty coordinate in the first phase of the game
 --
