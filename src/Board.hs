@@ -27,7 +27,7 @@ emptyBoard =
     , getMap = foldr (\x acc -> M.insert x (Stack []) acc) M.empty l
     }
   where
-    l = S.toList coordinates
+    l = S.toList coordinates where
 
 -- | Determines if a coordinate is on the board
 validCoordinate :: Coordinate -> Bool
@@ -123,9 +123,9 @@ isSurrounded b c = length (neighbors c b) == 6
 
 calcWinner :: Board -> Maybe Player
 calcWinner b = do
-    let remaining = S.map (innerstack b) (nonempties b)
-        whiteStacks = S.filter (\s -> head s == White) remaining
-        blackStacks = S.filter (\s -> head s == Black) remaining
+    let remaining = Data.List.map (innerstack b) (S.toList (nonempties b))
+        whiteStacks = filter (\s -> head s == White) remaining
+        blackStacks = filter (\s -> head s == Black) remaining
         white = concat whiteStacks
         black = concat blackStacks
     if length white > length black then Just PWhite

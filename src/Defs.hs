@@ -54,7 +54,7 @@ data Move = Move
   { player :: Player
   , start :: Coordinate
   , end :: Coordinate
-  }
+  } deriving (Show, Eq)
 
 data GameState = GameState
   { board :: Board

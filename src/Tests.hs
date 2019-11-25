@@ -159,7 +159,7 @@ tBoard :: Test
 tBoard = TestList [testEmptyBoard, testValidCoordinate, testContainsRed,
                    testAllNeighbors, testNeighborOf, testHasRed, testSurrounded,
                    testNeighbors, testNonempties, testNonempty, testCountEmpty,
-                   testNumActivePieces]
+                   testNumActivePieces, testCalcWinner]
 
 -- TODO : Check that each element is empty, too?
 testEmptyBoard :: Test
@@ -214,7 +214,9 @@ testConnected :: Test
 testConnected = "connected" ~: TestList []
 
 testCalcWinner :: Test
-testCalcWinner = "calcWinner" ~: TestList []
+testCalcWinner = "calcWinner" ~: TestList [
+   calcWinner smallRedBoard ~?= Nothing,
+   calcWinner (place surroundedBoard White (Coordinate (2,1))) ~?= Just PWhite]
 
 testApply :: Test
 testApply = "apply" ~: TestList []
@@ -250,7 +252,8 @@ testNumActivePieces = "numActivePiece" ~: TestList [
 -------------------------------------------------------------------------------
 
 tMove :: Test
-tMove = TestList [testPlayerOwns, testIsLinear, testIsOnBoard, testDistance]
+tMove = TestList [testPlayerOwns, testIsLinear, testIsOnBoard, testDistance,
+                  testGetPossibleMoves]
 
 --Allows for invalid cordinates??
 testIsLinear :: Test
@@ -279,7 +282,10 @@ testValidMove :: Test
 testValidMove = "validMove" ~: TestList []
 
 testGetPossibleMoves :: Test
-testGetPossibleMoves = "getPossibleMoves" ~: TestList []
+testGetPossibleMoves = "getPossibleMoves" ~: TestList [
+  getPossibleMoves emptyBoard ~?= [],
+  getPossibleMoves smallRedBoard ~?= [],
+  length (getPossibleMoves surroundedBoard) ~?= 12 ]
 
 testParseMove :: Test
 testParseMove = "testParseMove" ~: TestList []
