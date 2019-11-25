@@ -12,7 +12,7 @@ import Data.Function
 import Data.List
 import Data.Monoid
 import Control.Monad
-import Data.Map as M hiding (null)
+import qualified Data.Map as M hiding (null)
 import qualified Data.Set as S
 import Debug.Trace (trace)
 
@@ -93,24 +93,34 @@ filledDvonn = do
 filledMini :: Gen Board
 filledMini = do
   let cs = S.toList (coordinates emptyMini)
-      ps = replicate 3 Red ++ replicate 23 Black ++ replicate 23 White
+      ps = replicate 1 Red ++ replicate 4 Black ++ replicate 4 White
   fill ps cs
 
 genTrace :: Board -> Gen [Board]
 genTrace board = do
   let allmoves = getPossibleMoves board
+  trace (show $ length allmoves) (return ())
   if null allmoves
     then return [board]
     else do
       move <- oneof $ return <$> allmoves
       let newboard = apply move board
-      (board :) <$> frequency [(1, return [newboard]), (3, genTrace newboard)]
+      (board :) <$> genTrace newboard
+      -- (board :) <$> frequency [(1, return [newboard]), (3, genTrace newboard)]
 
 instance Arbitrary Dvonn where
   arbitrary = Dvonn <$> (filledDvonn >>= genTrace)
 
 instance Arbitrary Mini where
   arbitrary = Mini <$> (filledMini >>= genTrace)
+
+getMinis :: IO (Board,Move)
+getMinis = do
+  m <- sample' (arbitrary :: Gen Mini)
+  let (Mini bs) = head m
+  let b = head bs
+  let m = getPossibleMoves b
+  return (b,head m)
 
 -------------------------------------------------------------------------------
 -- QuickCheck instances for game properties
@@ -185,6 +195,25 @@ tBoard = TestList [testEmptyBoard, testValidCoordinate, testContainsRed,
                    testNeighbors, testNonempties, testNonempty, testCountEmpty,
                    testNumActivePieces, testCalcWinner]
 
+mini1 = foldr (\e b -> uncurry (place b) e) emptyMini (zip pieces coords)
+  where
+    coords = S.toList $ coordinates emptyMini
+    pieces = [Black,White,Black,White,Red,Black,White,Black,White]
+mini2 =
+  Board
+    (M.fromList
+       [ (Coordinate (1, 1), Stack [])
+       , (Coordinate (1, 2), Stack [White])
+       , (Coordinate (1, 3), Stack [White])
+       , (Coordinate (2, 1), Stack [Black, White])
+       , (Coordinate (2, 2), Stack [Red])
+       , (Coordinate (2, 3), Stack [Black])
+       , (Coordinate (3, 1), Stack [White])
+       , (Coordinate (3, 2), Stack [Black])
+       , (Coordinate (3, 3), Stack [White])
+       ])
+    (Stack [])
+
 -- TODO : Check that each element is empty, too?
 testEmptyBoard :: Test
 testEmptyBoard = "empty" ~: TestList [
@@ -247,7 +276,10 @@ testCalcWinner = "calcWinner" ~: TestList [
    calcWinner (place surroundedBoard White (Coordinate (2,1))) ~?= Just PWhite]
 
 testApply :: Test
-testApply = "apply" ~: TestList []
+testApply =
+  "apply" ~:
+  TestList
+    [apply (Move PWhite (Coordinate (1, 1)) (Coordinate (2, 1))) mini1 ~?= mini2]
 
 testGetNextTurn :: Test
 testGetNextTurn = "getNextTurn" ~: TestList []

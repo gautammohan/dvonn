@@ -15,7 +15,7 @@ newtype Coordinate = Coordinate (Int, Int)
 type Component = S.Set Coordinate
 
 data Board = Board {getMap :: M.Map Coordinate Stack, getDiscard :: Stack}
-    deriving (Show)
+    deriving (Show, Eq)
 
 -- | Adds all game coordinates, to a map and initializes each value to an empty
 -- stack
@@ -41,7 +41,7 @@ data Piece = Red | White | Black
 
 newtype Stack = Stack
   { getStack :: [Piece]
-  } deriving (Show)
+  } deriving (Show, Eq)
 
 instance Num Coordinate where
    (+) (Coordinate (x1,y1)) (Coordinate (x2,y2)) = Coordinate (x1+x2, y1+y2)

@@ -12,6 +12,9 @@ import qualified Data.Set as S
 import Defs
 import Data.List
 
+
+-- diff Board -> Board -> [(Coordinate, )]
+
 coordinates :: Board -> S.Set Coordinate
 coordinates = S.fromList . keys . getMap
 
@@ -20,9 +23,9 @@ validCoordinate :: Board -> Coordinate -> Bool
 validCoordinate b = (`elem` coordinates b)
 
 validDvonnCoordinate :: Coordinate -> Bool
-validDvonnCoordinate = validCoordinate (emptyDvonn)
+validDvonnCoordinate = validCoordinate emptyDvonn
 validMiniCoordinate :: Coordinate -> Bool
-validMiniCoordinate = validCoordinate (emptyMini)
+validMiniCoordinate = validCoordinate emptyMini
 
 allNeighbors :: Board -> Coordinate -> S.Set Coordinate
 allNeighbors b (Coordinate (x, y)) =
@@ -134,7 +137,7 @@ apply (Move _ c1 c2) b =
 combine :: Board -> Coordinate -> Coordinate -> Board
 combine b c1 c2 =
   let newStack = Stack $ innerstack b c1 ++ innerstack b c2
-      newM = M.insert c2 (Stack []) (M.insert c1 newStack (getMap b))
+      newM = M.insert c1 (Stack []) (M.insert c2 newStack (getMap b))
    in b {getMap = newM}
 
 discard :: Board -> S.Set Coordinate -> Board
@@ -146,7 +149,7 @@ discard b cs =
 
 cleanup :: Board -> Board
 cleanup b =
-  let emptyComponents = filter (hasRed b) (allComponents b)
+  let emptyComponents = filter (not . hasRed b) (allComponents b)
    in foldr (flip discard) b emptyComponents
 
 innerstack :: Board -> Coordinate -> [Piece]

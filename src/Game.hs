@@ -19,7 +19,7 @@ import Control.Monad
 
 import Data.List
 
-import Board (calcWinner, apply, emptyBoard)
+import Board (calcWinner, apply)
 import Defs
 import Move
 import IOInterface
@@ -40,7 +40,7 @@ executeMove m = do
     else throwError InvalidMove
 
 startState :: GameState
-startState = GameState emptyBoard Start Phase1
+startState = GameState emptyDvonn Start Phase1
 
 getTurnInput :: Game Move
 getTurnInput = do
