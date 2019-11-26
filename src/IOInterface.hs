@@ -12,8 +12,6 @@ import Board
 import Tests
 import Data.Set as S hiding (foldr)
 
---TODO: What is the type signature here?
---parseMove :: Move -> ??
 parseMove = undefined
 
 printTops :: Int -> Int -> IO ()
@@ -36,8 +34,6 @@ printBases n s = do
                spaces = foldr (\x acc-> " " ++ acc) "" ss
            putStrLn(spaces ++ bases)
                
---tops = " / \\ / \\ / \\ / \\ / \\ / \\ / \\ / \\ / \\ "
---parametrize this with coordinates next
 printMiddles :: Board -> Int -> Int -> IO ()
 printMiddles b s i = do
             let c = S.toList $ S.filter (\(Coordinate (x,y)) -> y == i) (coordinates b)
@@ -55,15 +51,11 @@ printMiddles b s i = do
                       Black -> "B"
                       Red   -> "R"
                     size = length s
-                case size < 10 of
-                  True -> col ++ " " ++ show(size)
-                  _    -> col ++ show(size)
-
---  putStrLn("|   |   |   |   |   |   |   |   |   |")
+                if size < 10 then col ++ " " ++ show size else col ++ show size
 
 -- | Prints normal Dvonn sized board. Can print an emty board, for example
 -- with the command "printGridDvonn emptyDvonn"
---
+
 printGridDvonn :: Board -> IO ()
 printGridDvonn b = do
             printTops 9 4
@@ -101,3 +93,5 @@ printGridMini b = do
             printMiddles b 0 3
             printBases 3 0
 
+printBoard :: Board -> IO ()
+printBoard b = if size (coordinates b) == 9 then printGridMini b else printGridDvonn b
