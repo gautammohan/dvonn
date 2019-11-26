@@ -50,8 +50,10 @@ instance Arbitrary Coordinate where
     return $ Coordinate (boundedX, boundedY)
       where
         getValidY x rand
-          | x == 1 || x == 11 = rand `mod` 3
-          | x == 2 || x == 10 = rand `mod` 4
+          | x == 1  = rand `mod` 3
+          | x == 2  = rand `mod` 4
+          | x == 10 = (rand `mod` 4) + 1
+          | x == 11 = (rand `mod` 3) + 2
           | otherwise = rand `mod` 5
 
 getRandNeighbor :: Board -> Coordinate -> Gen Coordinate
@@ -240,7 +242,7 @@ testAllNeighbors :: Test
 testAllNeighbors = "neighbors" ~: TestList [
     allNeighbors' (Coordinate (-1,-1)) ~?= S.fromList [],
     allNeighbors' (Coordinate (11,3)) ~?=
-      S.fromList [Coordinate (10,2), Coordinate (10,3), Coordinate (11,2)],
+      S.fromList [Coordinate (10,2), Coordinate (10,3), Coordinate (11,4)],
     allNeighbors' (Coordinate (7,4)) ~?=
       S.fromList [Coordinate (6,3), Coordinate (6,4), Coordinate (7,3),
                 Coordinate (7,5), Coordinate (8,4), Coordinate (8,5)]]

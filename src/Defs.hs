@@ -30,8 +30,10 @@ emptyDvonn :: Board
 emptyDvonn =
   emptyBoard $
   [Coordinate (x, y) | x <- [3 .. 9], y <- [1 .. 5]] ++
-  [Coordinate (x, y) | x <- [2, 10], y <- [1 .. 4]] ++
-  [Coordinate (x, y) | x <- [1, 11], y <- [1 .. 3]]
+  [Coordinate (x, y) | x <- [2], y <- [1 .. 4]] ++
+  [Coordinate (x, y) | x <- [1], y <- [1 .. 3]] ++ 
+  [Coordinate (x, y) | x <- [10], y <- [2 .. 5]] ++
+  [Coordinate (x, y) | x <- [11], y <- [3 .. 5]] 
 
 emptyMini :: Board
 emptyMini = emptyBoard [Coordinate (x, y) | x <- [1 .. 3], y <- [1 .. 3]]
