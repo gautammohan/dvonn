@@ -10,44 +10,11 @@ import Defs
 import System.IO
 import Board
 import Tests
+import Data.Set as S hiding (foldr)
+
 --TODO: What is the type signature here?
 --parseMove :: Move -> ??
 parseMove = undefined
-
---TODO: What is the type signature here?
---printBoard :: Board -> ??
-printHexagon :: Board -> Coordinate -> IO ()
-printHexagon b c = do
-               let s = innerstack b c
-                   color = case s of
-                     (x:xs) -> case head s of
-                        White -> "W"
-                        Black -> "B"
-                        _     -> "R"
-                     _      -> " "
-                   len = case s of 
-                     (x:xs) -> show (length s)
-                     _      -> " "
-               putStrLn(" --- ")
-               putStrLn("/ " ++ color ++ " \\")
-               putStrLn("\\ " ++ len ++ " /")
-               putStrLn(" --- ")
-
-printHexagon2 :: Board -> Coordinate -> IO ()
-printHexagon2 b c = do
-               let s = innerstack b c
-                   color = case s of
-                     (x:xs) -> case head s of
-                        White -> "W"
-                        Black -> "B"
-                        _     -> "R"
-                     _      -> " "
-                   len = case s of 
-                     (x:xs) -> show (length s)
-                     _      -> " "
-               putStrLn(" /'\\ ")
-               putStrLn("|" ++ color ++ len ++ " |")
-               putStrLn(" \\-/ ")
 
 printTops :: Int -> Int -> IO ()
 printTops n s = do
@@ -57,7 +24,7 @@ printTops n s = do
                   _ -> [1 ..s]
                tops = foldr (\x acc-> " / \\" ++ acc) " " ns
                spaces = foldr (\x acc-> " " ++ acc) "" ss
-           putStrLn(spaces ++ tops ++ spaces)
+           putStrLn(spaces ++ tops)
 
 printBases :: Int -> Int -> IO ()
 printBases n s = do
@@ -67,24 +34,70 @@ printBases n s = do
                   _ -> [1 ..s]
                bases = foldr (\x acc-> " \\ /" ++ acc) " " ns
                spaces = foldr (\x acc-> " " ++ acc) "" ss
-           putStrLn(spaces ++ bases ++ spaces)
+           putStrLn(spaces ++ bases)
                
 --tops = " / \\ / \\ / \\ / \\ / \\ / \\ / \\ / \\ / \\ "
 --parametrize this with coordinates next
-printMiddles :: Int -> Int -> IO ()
-printMiddles n s = do
-            let ns = [1 .. n]
+printMiddles :: Board -> Int -> Int -> IO ()
+printMiddles b s i = do
+            let c = S.toList $ S.filter (\(Coordinate (x,y)) -> y == i) (coordinates b)
                 ss = case s of
                    0 -> []
                    _ -> [1 .. s]
-                middles = foldr (\x acc -> "|   " ++ acc) "|" ns
+                middles = foldr (\x acc -> "|" ++ label x ++ acc) "|" c 
                 spaces = foldr (\x acc-> " " ++ acc) "" ss
-            putStrLn(spaces ++ middles ++ spaces)
+            putStrLn(spaces ++ middles) where
+       label y = case innerstack b y of
+          [] -> "   "
+          s -> do
+                let col = case head s of
+                      White -> "W"
+                      Black -> "B"
+                      Red   -> "R"
+                    size = length s
+                case size < 10 of
+                  True -> col ++ " " ++ show(size)
+                  _    -> col ++ show(size)
 
 --  putStrLn("|   |   |   |   |   |   |   |   |   |")
 
+-- | Prints normal Dvonn sized board. Can print an emty board, for example
+-- with the command "printGridDvonn emptyDvonn"
+--
 printGridDvonn :: Board -> IO ()
 printGridDvonn b = do
-            printTops 9 2
-            printMiddles 9 2
-            printBases 9 2
+            printTops 9 4
+            printMiddles b 4 1
+            printTops 10 2
+            printMiddles b 2 2
+            printTops 11 0
+            printMiddles b 0 3
+            printBases 11 0
+            printMiddles b 2 4
+            printBases 10 2 
+            printMiddles b 4 5
+            printBases 9 4
+
+-- | Prints mini board. Can print an empty mini board, for example
+-- with the command "printGridMini emptyMini"
+--
+printTopsMini :: Int -> Int -> IO ()
+printTopsMini n s = do
+           let ns = [1 .. n]
+               ss = case s of
+                  0 -> []
+                  _ -> [1 ..s]
+               tops = foldr (\x acc-> " / \\" ++ acc) " " ns
+               spaces = foldr (\x acc-> " " ++ acc) "" ss
+           putStrLn(spaces ++ tops ++ "/")
+
+printGridMini :: Board -> IO ()
+printGridMini b = do
+            printTops 3 4
+            printMiddles b 4 1
+            printTopsMini 3 2
+            printMiddles b 2 2
+            printTopsMini 3 0
+            printMiddles b 0 3
+            printBases 3 0
+
