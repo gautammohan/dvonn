@@ -6,17 +6,30 @@
 
 module Board where
 
-import Data.Map as M hiding (null, foldr, filter, map)
+import qualified Data.Map as M
 import Data.Monoid
 import qualified Data.Set as S
 import Defs
 import Data.List
+import Data.Maybe
 
 
--- diff Board -> Board -> [(Coordinate, )]
+diff :: Board -> Board -> (M.Map Coordinate (Maybe (Stack, Stack)),Maybe (Stack, Stack))
+diff (Board m1 d1) (Board m2 d2) =
+  (M.filter isJust (M.intersectionWith f m1 m2), discardDiff)
+  where
+    f s1 s2 =
+      if s1 == s2
+        then Nothing
+        else Just (s1, s2)
+    discardDiff =
+      if d1 == d2
+        then Nothing
+        else Just (d1, d2)
+
 
 coordinates :: Board -> S.Set Coordinate
-coordinates = S.fromList . keys . getMap
+coordinates = S.fromList . M.keys . getMap
 
 -- | Determines if a coordinate is on the board
 validCoordinate :: Board -> Coordinate -> Bool
