@@ -49,13 +49,42 @@ printHexagon2 b c = do
                putStrLn("|" ++ color ++ len ++ " |")
                putStrLn(" \\-/ ")
 
-printTop :: IO ()
-printTop = putStrLn(" / \\ / \\ / \\ / \\ / \\ / \\ / \\ / \\ / \\ ")
+printTops :: Int -> Int -> IO ()
+printTops n s = do
+           let ns = [1 .. n]
+               ss = case s of
+                  0 -> []
+                  _ -> [1 ..s]
+               tops = foldr (\x acc-> " / \\" ++ acc) " " ns
+               spaces = foldr (\x acc-> " " ++ acc) "" ss
+           putStrLn(spaces ++ tops ++ spaces)
 
-printSecondLine :: Board -> IO ()
-printSecondLine b = putStrLn("|   |   |   |   |   |   |   |   |   |")
+printBases :: Int -> Int -> IO ()
+printBases n s = do
+           let ns = [1 .. n]
+               ss = case s of
+                  0 -> []
+                  _ -> [1 ..s]
+               bases = foldr (\x acc-> " \\ /" ++ acc) " " ns
+               spaces = foldr (\x acc-> " " ++ acc) "" ss
+           putStrLn(spaces ++ bases ++ spaces)
+               
+--tops = " / \\ / \\ / \\ / \\ / \\ / \\ / \\ / \\ / \\ "
+--parametrize this with coordinates next
+printMiddles :: Int -> Int -> IO ()
+printMiddles n s = do
+            let ns = [1 .. n]
+                ss = case s of
+                   0 -> []
+                   _ -> [1 .. s]
+                middles = foldr (\x acc -> "|   " ++ acc) "|" ns
+                spaces = foldr (\x acc-> " " ++ acc) "" ss
+            putStrLn(spaces ++ middles ++ spaces)
 
-printGrid :: Board -> IO ()
-printGrid b = do
-            printTop
-            printSecondLine b
+--  putStrLn("|   |   |   |   |   |   |   |   |   |")
+
+printGridDvonn :: Board -> IO ()
+printGridDvonn b = do
+            printTops 9 2
+            printMiddles 9 2
+            printBases 9 2
