@@ -35,7 +35,7 @@ executeMove m = do
   if validMove b m
     then do
       let newB = apply m b
-          newT = getNextTurn newB (player m) 
+          newT = getNextTurn newB (player m)
       modify (\gs -> gs {turn = newT, board = newB})
     else throwError InvalidMove
 
@@ -82,4 +82,3 @@ dvonn = phase1 >> modify (\gs -> gs {phase = Phase2}) >> phase2
 
 evalGame :: GameState -> Game a -> IO (Either GameError (a, GameState))
 evalGame s g = runExceptT (runStateT g s)
-

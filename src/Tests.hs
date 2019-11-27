@@ -38,35 +38,6 @@ main = do
 -- A framework for randomized testing
 -------------------------------------------------------------------------------
 
-miniPieces = replicate 1 Red ++ replicate 4 Black ++ replicate 4 White
-dvonnPieces = replicate 3 Red ++ replicate 23 Black ++ replicate 23 White
-
--- split a list of pieces into stacks, more small stacks than large stacks
-randStacks :: (Int,Int) -> (Int,Int) -> [Piece] -> Gen [Stack]
-randStacks _ _ [] = return []
-randStacks small large l = do
-  bound <- frequency [(3, return small), (1,return large)]
-  i <- choose bound
-  let (stack,rest) = splitAt i l
-  (Stack stack:) <$> randStacks small large rest
-
-newtype Mini' = Mini' {getMini :: Board} deriving (Show)
-
-mkMiniPairs :: Gen (Board, Move)
-mkMiniPairs = do
-  Mini' b <- arbitrary
-  m <- oneof $ return <$> getPossibleMoves b
-  return (b,m)
-
--- generate Mini boards with at least one possible move
-instance Arbitrary Mini' where
-  arbitrary = do
-    cs <- shuffle . S.toList $ coordinates emptyMini
-    stacks <- randStacks (1,1) (2,3) miniPieces
-    let map = M.fromList $ zip cs stacks
-    let b = cleanup (Board map (Stack []))
-    return (Mini' b) `suchThat` (not . null . getPossibleMoves . getMini)
-
 instance Arbitrary Piece where
   arbitrary = oneof $ return <$> [Red, White, Black]
 
@@ -85,47 +56,60 @@ instance Arbitrary Coordinate where
           | x == 11 = (rand `mod` 3) + 2
           | otherwise = rand `mod` 5
 
-getRandNeighbor :: Board -> Coordinate -> Gen Coordinate
-getRandNeighbor b c = oneof $ return <$> S.toList (allNeighbors b c)
+miniPieces = replicate 1 Red ++ replicate 4 Black ++ replicate 4 White
+dvonnPieces = replicate 3 Red ++ replicate 23 Black ++ replicate 23 White
 
--- | Return a random filled board (all pieces are placed)
-filledBoard :: Board -> Gen Board
-filledBoard b = do
-  cs <- shuffle $ S.toList (coordinates b)
-  let ps =
-        Stack . (: []) <$>
-        replicate 3 Red ++ replicate 23 Black ++ replicate 23 White
-  let m = M.fromList $ zip cs ps
-  return $ Board m (Stack [])
+-- split a list of pieces into stacks, more small stacks than large stacks
+randStacks :: (Int,Int) -> (Int,Int) -> [Piece] -> Gen [Stack]
+randStacks _ _ [] = return []
+randStacks small large l = do
+  bound <- frequency [(3, return small), (1, return large)]
+  i <- choose bound
+  let (stack, rest) = splitAt i l
+  (Stack stack :) <$> randStacks small large rest
 
-newtype Path = Path { getPath :: [Coordinate]}
+-- NOTE: if no possible placement of the stack list can result in a board with
+-- valid moves, this will diverge. Possible diverging inputs could be: a single
+-- stack, many stacks that are too high to move. This function will perform very
+-- slowly if the average stack height is very high or the number of stacks is
+-- low, since it will decrease the space of boards with valid moves
+-- significantly
+placeRandomly :: [Stack] -> [Coordinate] -> Gen Board
+placeRandomly stacks coords = do
+  cs <- shuffle coords
+  let map = M.fromList $ zip cs (stacks ++ repeat (Stack []))
+  let b = cleanup $ Board map (Stack [])
+  if null $ getPossibleMoves b
+    then placeRandomly stacks coords
+    else return b
 
--- | A path is a sequence of adjacent coordinates without a cycle
-instance Arbitrary Path where
-  arbitrary = undefined
+newtype Mini = Mini {getMini :: Board} deriving (Show)
+newtype Dvonn = Dvonn {getDvonn :: Board} deriving (Show)
 
--- TODO figure out how to use this to test the neighbor property
--- aka get it working
+-- generate Mini boards with at least one possible move
+instance Arbitrary Mini where
+  arbitrary = do
+    cs <- shuffle . S.toList $ coordinates emptyMini
+    stacks <- randStacks (1, 1) (2, 3) miniPieces
+    Mini <$> placeRandomly stacks (S.toList $ coordinates emptyMini)
 
-newtype Dvonn = Dvonn [Board] deriving (Show)
-newtype Mini = Mini [Board] deriving (Show, Read)
+-- generate Mini boards with at least one possible move
+instance Arbitrary Dvonn where
+  arbitrary = do
+    cs <- shuffle . S.toList $ coordinates emptyDvonn
+    stacks <- randStacks (1, 3) (4, 8) dvonnPieces
+    Dvonn <$> placeRandomly stacks (S.toList $ coordinates emptyDvonn)
 
-fill :: [Piece] -> [Coordinate] -> Gen Board
-fill ps cs = do
-  shuf <- shuffle cs
-  return $ Board (M.fromList $ zip cs (Stack . (: []) <$> ps)) (Stack [])
+pairOf :: Gen Board -> Gen (Board, Move)
+pairOf g = do
+  b <- g
+  m <- oneof $ return <$> getPossibleMoves b
+  return (b,m)
 
-filledDvonn :: Gen Board
-filledDvonn = do
-  let cs = S.toList (coordinates emptyDvonn)
-      ps = replicate 3 Red ++ replicate 23 Black ++ replicate 23 White
-  fill ps cs
-
-filledMini :: Gen Board
-filledMini = do
-  let cs = S.toList (coordinates emptyMini)
-      ps = replicate 1 Red ++ replicate 4 Black ++ replicate 4 White
-  fill ps cs
+dvonnBoard = getDvonn <$> arbitrary
+miniBoard = getMini <$> arbitrary
+miniPairs = pairOf miniBoard
+dvonnPairs = pairOf dvonnBoard
 
 genTrace :: Board -> Gen [Board]
 genTrace board = do
@@ -136,69 +120,94 @@ genTrace board = do
     else do
       move <- oneof $ return <$> allmoves
       let newboard = apply move board
-      (board :) <$> frequency [(1, return [newboard]), (5, genTrace newboard)]
+      (board :) <$> frequency [(1, return [newboard]), (3, genTrace newboard)]
 
-instance Arbitrary Dvonn where
-  arbitrary = Dvonn <$> (filledDvonn >>= genTrace)
-  shrink (Dvonn bs) = Dvonn <$> inits bs
+filledDvonn = placeRandomly stacks coords
+  where
+    coords = S.toList $ coordinates emptyDvonn
+    stacks = Stack . (:[]) <$> dvonnPieces
 
-instance Arbitrary Mini where
-  arbitrary = Mini <$> (filledMini >>= genTrace)
-  shrink (Mini bs) = Mini <$> tail (inits bs)
+filledMini = placeRandomly stacks coords
+  where
+    coords = S.toList $ coordinates emptyMini
+    stacks = Stack . (:[]) <$> miniPieces
 
-getMinis :: IO (Board,Move)
-getMinis = do
-  m <- sample' (arbitrary :: Gen Mini)
-  let (Mini bs) = head m
-  let b = head bs
-  let m = getPossibleMoves b
-  return (b,head m)
+miniTrace = filledMini >>= genTrace
+dvonnTrace = filledDvonn >>= genTrace
+
+-----------------------------------
+-- Prop Combinators
+-----------------------------------
+
+-- | A combinator to check a property on a board and the board produced by
+-- making a move. Good for random "unit testing" of board state correctness.
+liftPair :: (Board -> Board -> Bool) -> (Board,Move) -> Bool
+liftPair pred (b,m) = pred b (apply m b)
+
+-- | Given a sequence [a1,a2,a3], check that a property p holds for all adjacent
+-- pairs, i.e. (p a2 a1) && p (a3 a2).
+liftTrace :: (a -> a -> Bool) -> [a] -> Bool
+liftTrace pred l = getAll $ foldMap (All . uncurry pred) pairs
+  where
+    pairs = zip l (tail l)
 
 -------------------------------------------------------------------------------
 -- QuickCheck instances for game properties
 -------------------------------------------------------------------------------
-
-runMini :: ([Board] -> Bool) -> Mini -> Bool
-runMini prop (Mini b) = prop b
-
--- | Given a sequence [a1,a2,a3], check that a property p holds for all adjacent pairs, i.e. (p a2 a1) && p (a3 a2)
-checkBetween :: (a -> a -> Bool) -> [a] -> Bool
-checkBetween pred l = getAll $ foldMap (All . uncurry pred) pairs
-  where
-    pairs = zip l (tail l)
-checkTrace = checkBetween
-
 -- Our Arbitrary Coordinate instance should only generate valid coordinates
 prop_coordinate_generator :: Coordinate -> Bool
 prop_coordinate_generator = validCoordinate emptyDvonn
+
+prop_gen_mini_sane = forAll miniBoard $ (9 ==) . S.size . coordinates
+prop_gen_dvonn_sane = forAll dvonnBoard $ (49 ==) . S.size . coordinates
+
+-- | all possible moves must be valid from a random board
+prop_valid_move :: Board -> Bool
+prop_valid_move b = getAll $ foldMap (All . validMove b) (getPossibleMoves b)
+
+prop_valid_moves =
+  forAll miniBoard prop_valid_move .&&. forAll dvonnBoard prop_valid_move
+
+-- | the number of nonempty spaces must decrease after making a move
+prop_nonempty_decreasing = (>) `on` (S.size . nonempties)
+
+prop_nonempty_decreasing_pairs =
+  forAll miniPairs (liftPair prop_nonempty_decreasing) .&&.
+  forAll dvonnPairs (liftPair prop_nonempty_decreasing)
+
+-- dvonnTrace makes this slow !!
+prop_nonempty_decreasing_traces =
+  forAll dvonnTrace (liftTrace prop_nonempty_decreasing) .&&.
+  forAll miniTrace (liftTrace prop_nonempty_decreasing)
+
 
 -- All pieces on the board must have a path to a red piece
 --prop_no_disconnected_pieces :: Board -> Bool
 --prop_no_disconnected_pieces b = all (`connected` b) (nonempty b)
 
--- There cannot exist a hole on the board
-prop_no_hole :: Board -> Bool
-prop_no_hole b = undefined
+-- There cannot exist a hole on the board. FIXME: this is wrong, property needs
+-- to be: all coordinates cannot have six nonempty neighbors
+prop_no_hole b =
+  getAll $
+  foldMap (All . (/= 0) . S.size . flip neighbors b) (S.toList $ coordinates b)
+
+prop_no_holes = forAll miniBoard prop_no_hole .&&. forAll dvonnBoard prop_no_hole
 
 -- In the move phase, the total number of pieces on the board not including the
 -- discard pile must be monotonically decreasing. i.e. given b1 --> b2,
 -- numActive b1 > numActive b2
-prop_inplay_decrease :: [Board] -> Bool
-prop_inplay_decrease = checkTrace ((>) `on` numActivePieces)
+prop_inplay_decrease = (>) `on` numActivePieces
 
 -- Over the course of the game, the number of totally surrounded pieces
 -- decreases monotonically
-prop_surrounded_decrease :: [Board] -> Bool
-prop_surrounded_decrease = undefined
--- prop_surrounded_decrease = checkTrace ((>=) `on` numSurrounded)
---   where
---     numSurrounded b = S.size $ S.filter (isSurrounded b) coordinates
+prop_surrounded_decrease = (>=) `on` numSurrounded
+  where
+    numSurrounded b = S.size $ S.filter (isSurrounded b) (coordinates b)
 
 -- The number of pieces of each color between the board and discard pile stay
 -- consistent after the placing phase. I.e., check that we do not lose any
 -- pieces
-prop_consistent_sum :: [Board] -> Bool
-prop_consistent_sum = checkTrace ((==) `on` totalPieces)
+prop_consistent_sum = (==) `on` totalPieces
   where
     totalPieces b = numDiscardedPieces b + numActivePieces b
 

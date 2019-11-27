@@ -45,7 +45,7 @@ playerOwns p (Stack s) = case p of
 --  5. The player owns the stack he or she proposes to move
 validMove :: Board -> Move -> Bool
 validMove b m = case M.lookup (start m) (getMap b) of
-   Just (Stack s)  -> isOnBoard b m && isLinear m &&
+   Just (Stack s)  -> isOnBoard b m  && isLinear m  &&
               not (isSurrounded b (start m)) &&
               distance m == length s && playerOwns (player m) (Stack s)
    _       -> False
@@ -57,17 +57,17 @@ getNextTurn b p = do
        canMoveWhite = not $ Data.List.null [m' | m' <- getPossibleMoves b, player m' == PWhite]
    case p of
       PWhite | canMoveBlack -> MoveBlack
-             | canMoveWhite -> MoveWhite 
+             | canMoveWhite -> MoveWhite
              | otherwise    -> End
-      PBlack | canMoveWhite -> MoveWhite 
-             | canMoveBlack -> MoveBlack 
+      PBlack | canMoveWhite -> MoveWhite
+             | canMoveBlack -> MoveBlack
              | otherwise    -> End
 
 --      Start -> PlacingRed
 --      PlacingRed -> undefined
 --      PlacingWhite -> undefined
 --      PlacingBlack -> undefined
---      End -> undefined 
+--      End -> undefined
 
 -- | Places a piece on an empty coordinate in the first phase of the game
 --
