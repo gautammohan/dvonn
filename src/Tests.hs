@@ -63,9 +63,10 @@ dvonnPieces = replicate 3 Red ++ replicate 23 Black ++ replicate 23 White
 randStacks :: (Int,Int) -> (Int,Int) -> [Piece] -> Gen [Stack]
 randStacks _ _ [] = return []
 randStacks small large l = do
+  ps <- shuffle l
   bound <- frequency [(3, return small), (1, return large)]
   i <- choose bound
-  let (stack, rest) = splitAt i l
+  let (stack, rest) = splitAt i ps
   (Stack stack :) <$> randStacks small large rest
 
 -- NOTE: if no possible placement of the stack list can result in a board with
@@ -185,18 +186,22 @@ prop_nonempty_decreasing_traces =
 --prop_no_disconnected_pieces :: Board -> Bool
 --prop_no_disconnected_pieces b = all (`connected` b) (nonempty b)
 
--- There cannot exist a hole on the board. FIXME: this is wrong, property needs
--- to be: all coordinates cannot have six nonempty neighbors
+-- There cannot exist a hole on the board. This means that all nonempty spaces
+-- on the board cannot have 6 neighbors (where a neighbor is an active stack)
 prop_no_hole b =
-  getAll $
-  foldMap (All . (/= 0) . S.size . flip neighbors b) (S.toList $ coordinates b)
+  getAll $ foldMap (All . (< 6) . S.size . flip neighbors b) (empties b)
 
 prop_no_holes = forAll miniBoard prop_no_hole .&&. forAll dvonnBoard prop_no_hole
+
+foo :: (Board -> Bool) -> [Board] -> Bool
+foo pred bs = getAll $ foldMap (All . pred) bs
 
 -- In the move phase, the total number of pieces on the board not including the
 -- discard pile must be monotonically decreasing. i.e. given b1 --> b2,
 -- numActive b1 > numActive b2
-prop_inplay_decrease = (>) `on` numActivePieces
+prop_inplay_decreasing = (>=) `on` numActivePieces
+
+prop_inplay_decreasing_pairs = forAll miniPairs (liftPair prop_inplay_decreasing)
 
 -- Over the course of the game, the number of totally surrounded pieces
 -- decreases monotonically
@@ -216,6 +221,21 @@ prop_empty_increase :: [Board] -> Bool
 prop_empty_increase l = sort l' == l' && l' == nub l'
   where
     l' = countEmpty <$> l
+
+prop_no_disconnects :: Board -> Bool
+prop_no_disconnects b = getAll $ foldMap (All . hasRed b) (allComponents b)
+
+prop_no_disconnects_pairs = forAll miniTrace (foo prop_no_disconnects)
+
+prop_num_components :: Board -> Bool
+prop_num_components = (< 4) . length . allComponents
+
+prop_unique_components :: Board -> Bool
+prop_unique_components b = all no_overlap cpairs
+  where
+    cs = allComponents b
+    cpairs = [(c1,c2) | c1 <- cs, c2 <- cs, c1 /= c2]
+    no_overlap = S.null . uncurry S.intersection
 
 -------------------------------------------------------------------------------
 -- The following tests verify basic functionality in the Board module

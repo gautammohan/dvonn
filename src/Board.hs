@@ -77,22 +77,24 @@ neighbors c b = S.filter (nonempty b) (allNeighbors b c)
 -- | Find the component of nonempty spaces that a coordinate belongs to given a
 -- board.
 component :: Board -> Coordinate -> S.Set Coordinate
-component b c = aux b (S.fromList [c]) (neighbors c b)
+component b c =
+  if nonempty b c
+    then aux b (S.fromList [c]) (neighbors c b)
+    else S.empty
+  where
     -- Mutually recursive functions perform DFS to find all neighboring
     -- coordinates of a component given unseen coordinates
-  where
     aux :: Board -> S.Set Coordinate -> S.Set Coordinate -> S.Set Coordinate
     aux b component ns =
       let frontier = ns S.\\ component
        in S.foldl' addNewNeighbors component frontier
-
     addNewNeighbors :: S.Set Coordinate -> Coordinate -> S.Set Coordinate
     addNewNeighbors curr newCoord =
       let updated = newCoord `S.insert` curr
        in aux b updated (neighbors newCoord b)
 
 allComponents :: Board -> [S.Set Coordinate]
-allComponents b = aux [] (coordinates b)
+allComponents b = aux [] (nonempties b)
   where
     -- recursively find coordinates not in any component we have seen and add
     -- its component to the list
@@ -175,9 +177,11 @@ place b p c =
    in b {getMap = newB}
 
 -- | Returns list of nonempty spaces on board,  not including discard pile
---TODO Should we include discard pile here???
 nonempties :: Board -> S.Set Coordinate
 nonempties b = S.filter (nonempty b) (coordinates b)
+
+empties :: Board -> S.Set Coordinate
+empties b = S.filter (not . nonempty b) (coordinates b)
 
 -- | Check if a coordinate on the board is nonempty
 nonempty :: Board -> Coordinate -> Bool
@@ -185,8 +189,9 @@ nonempty b = not . null . innerstack b
 
 -- | Counts empty spaces on the board, not including the discard pile
 countEmpty :: Board -> Int
-countEmpty b = length (S.toList (S.filter (not . nonempty b) (coordinates b)))
+countEmpty = S.size . empties
 
+-- | Count the number of active pieces on the board (summing each stack)
 numActivePieces :: Board -> Int
 numActivePieces =
   getSum . foldMap (Sum . length . getStack . snd) . M.toList . getMap
