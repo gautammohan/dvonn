@@ -38,8 +38,34 @@ main = do
 -- A framework for randomized testing
 -------------------------------------------------------------------------------
 
-instance Arbitrary Board where
-  arbitrary = undefined
+miniPieces = replicate 1 Red ++ replicate 4 Black ++ replicate 4 White
+dvonnPieces = replicate 3 Red ++ replicate 23 Black ++ replicate 23 White
+
+-- split a list of pieces into stacks, more small stacks than large stacks
+randStacks :: (Int,Int) -> (Int,Int) -> [Piece] -> Gen [Stack]
+randStacks _ _ [] = return []
+randStacks small large l = do
+  bound <- frequency [(3, return small), (1,return large)]
+  i <- choose bound
+  let (stack,rest) = splitAt i l
+  (Stack stack:) <$> randStacks small large rest
+
+newtype Mini' = Mini' {getMini :: Board} deriving (Show)
+
+mkMiniPairs :: Gen (Board, Move)
+mkMiniPairs = do
+  Mini' b <- arbitrary
+  m <- oneof $ return <$> getPossibleMoves b
+  return (b,m)
+
+-- generate Mini boards with at least one possible move
+instance Arbitrary Mini' where
+  arbitrary = do
+    cs <- shuffle . S.toList $ coordinates emptyMini
+    stacks <- randStacks (1,1) (2,3) miniPieces
+    let map = M.fromList $ zip cs stacks
+    let b = cleanup (Board map (Stack []))
+    return (Mini' b) `suchThat` (not . null . getPossibleMoves . getMini)
 
 instance Arbitrary Piece where
   arbitrary = oneof $ return <$> [Red, White, Black]
