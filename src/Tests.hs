@@ -287,7 +287,6 @@ mini2 =
 
 move1 = Move PWhite (Coordinate (1,1)) (Coordinate (2,1))
 
--- TODO : Check that each element is empty, too?
 testEmptyBoard :: Test
 testEmptyBoard = "empty" ~: TestList [
   length (M.toList $ getMap emptyDvonn) ~?= 49]
@@ -386,9 +385,8 @@ testNumActivePieces = "numActivePiece" ~: TestList [
 
 tMove :: Test
 tMove = TestList [testPlayerOwns, testIsLinear, testIsOnBoard, testDistance,
-                  testGetPossibleMoves]
+                  testValidMove, testGetPossibleMoves]
 
---Allows for invalid cordinates??
 testIsLinear :: Test
 testIsLinear = "isLinear" ~: TestList [
    isLinear (Move PWhite (Coordinate (1,1)) (Coordinate (2,2))) ~?= True,
@@ -414,21 +412,14 @@ testPlayerOwns = "playerOwns" ~: TestList [
   playerOwns PWhite (Stack [Red]) ~?= False]
 
 testValidMove :: Test
-testValidMove = "validMove" ~: TestList []
+testValidMove = "validMove" ~: TestList [
+  validMove mini1 m ~?= True,
+  validMove mini2 m ~?= False]
+ where
+  m = Move PWhite  (Coordinate (1,1)) (Coordinate (2,2))
 
 testGetPossibleMoves :: Test
 testGetPossibleMoves = "getPossibleMoves" ~: TestList [
   getPossibleMoves emptyDvonn ~?= [],
   getPossibleMoves smallRedBoard ~?= [],
   length (getPossibleMoves surroundedBoard) ~?= 12 ]
-
-testParseMove :: Test
-testParseMove = "testParseMove" ~: TestList []
-
--------------------------------------------------------------------------------
--- The following tests verify basic functionality in the Game module
--------------------------------------------------------------------------------
-
--------------------------------------------------------------------------------
--- The following tests verify the IO functionality
--------------------------------------------------------------------------------
