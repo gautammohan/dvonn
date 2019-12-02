@@ -111,25 +111,6 @@ allComponents b = aux [] (nonempties b)
 isSurrounded :: Board -> Coordinate -> Bool
 isSurrounded b c = length (neighbors c b) == 6
 
--- | Starting at coordinate c, determines whether there is a path through
--- active coordinates to a coordinate containing a red piece. In other
--- words, is coordinate c in a connected component with a red piece?
--- TODO : This may be very inefficient with the exhaustive neighbor search
---       and need to test
--- connected :: Coordinate -> Board -> Bool
--- connected c b =  containsRed b c || connectedHelper [c] b [] where
---        connectedHelper xs b visited = do
---            let frontier = Data.List.nub $ foldr
---                   (\y ys -> neighbors y b ++ ys) ([] :: [Coordinate]) xs
---                frontier' = filter (`notElem` visited) frontier
---            not (null frontier') &&
---              (do let visited' = visited' ++ frontier'
---                  any (containsRed b) frontier' || connectedHelper frontier' b visited')
-
--- | Determines which player has won based on who has the most pieces overall
--- from stacks that that player controls.
--- TODO: Is it possible to have a tie?
-
 calcWinner :: Board -> Maybe Player
 calcWinner b = do
     let remaining = Data.List.map (innerstack b) (S.toList (nonempties b))

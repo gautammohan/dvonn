@@ -339,8 +339,6 @@ testNeighbors = "neighbors" ~: TestList [
   neighbors (Coordinate (3,3)) surroundedBoard ~?=
      S.fromList [Coordinate (2,2), Coordinate (2,3), Coordinate (3,2),
                  Coordinate (3,4), Coordinate (4,3), Coordinate (4,4)]]
-testConnected :: Test
-testConnected = "connected" ~: TestList []
 
 testCalcWinner :: Test
 testCalcWinner = "calcWinner" ~: TestList [
