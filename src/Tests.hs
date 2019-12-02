@@ -15,6 +15,7 @@ import Control.Monad
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Debug.Trace (trace)
+import IOInterface
 
 import Defs
 import Board

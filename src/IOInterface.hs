@@ -9,7 +9,6 @@ module IOInterface where
 import Defs
 import System.IO
 import Board
-import Tests
 import Data.Set as S hiding (foldr)
 
 printTops :: Int -> Int -> IO ()
