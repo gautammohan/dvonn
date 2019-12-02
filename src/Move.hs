@@ -11,6 +11,10 @@ import Data.List
 import Board
 import Data.Set as S
 import Defs
+import ParserCombinators
+import Parser
+import Control.Applicative
+import Data.Char (ord)
 
 -- | Only linear moves are permitted
 isLinear :: Move -> Bool
@@ -44,11 +48,12 @@ playerOwns p (Stack s) = case p of
 --  4. The move is the correct distance
 --  5. The player owns the stack he or she proposes to move
 validMove :: Board -> Move -> Bool
-validMove b m = case M.lookup (start m) (getMap b) of
+validMove b m@Jump{} = case M.lookup (start m) (getMap b) of
    Just (Stack s)  -> isOnBoard b m  && isLinear m  &&
               not (isSurrounded b (start m)) &&
               distance m == length s && playerOwns (player m) (Stack s)
    _       -> False
+validMove b m@(Place _ coord) = coord `S.member` empties b
 
 --We only need move or Turnstate
 getNextTurn :: Board -> Player -> TurnState
@@ -78,13 +83,40 @@ getNextTurn b p = do
 --placePiece :: Board -> Piece -> Coordinate -> Board
 --placePiece b p c = Board $ M.insert c (Stack [p]) (getMap b)
 
--- | Finds all possible moves based on the board state
---
+-- | Finds all possible moves based on the board state. This function only works
+-- for jumps, and is assumed to be called in Phase 2
 getPossibleMoves :: Board -> [Move]
 getPossibleMoves b = do
    let candidates  = S.toList $ nonempties b
-       white_moves = [Move PWhite x y | x <- candidates, y <- candidates,
-                        validMove b (Move PWhite x y)]
-       black_moves = [Move PBlack x y | x <- candidates, y <- candidates,
-                        validMove b (Move PBlack x y)]
+       white_moves = [Jump PWhite x y | x <- candidates, y <- candidates,
+                        validMove b (Jump PWhite x y)]
+       black_moves = [Jump PBlack x y | x <- candidates, y <- candidates,
+                        validMove b (Jump PBlack x y)]
    white_moves ++ black_moves
+
+parseMove :: String -> TurnState -> Either GameError Move
+parseMove s ts = case parse (move ts) s of
+  Left _ -> Left MoveParseError
+  Right m -> Right m
+
+move :: TurnState -> Parser Move
+move ts = choice [jump p, placement c]
+  where
+    (c,p) = case ts of
+      t | t == PlacingWhite || t == MoveWhite -> (White, PWhite)
+      t | t == PlacingBlack || t == MoveBlack -> (Black, PBlack)
+      PlacingRed -> (Red, PWhite) -- player doesnt matter
+      Start -> (Black, PBlack)
+      End -> (White, PWhite) --doesn't matter
+
+placement :: Piece -> Parser Move
+placement p = Place p <$> coord
+
+jump :: Player -> Parser Move
+jump p = Jump p <$> coord <*> (some space *> string "to" *> some space *> coord)
+
+coord :: Parser Coordinate
+coord = curry Coordinate <$> x <*> y
+  where
+    x = (\c -> ord c - 64) <$> upper -- X coordinate specified as a capital letter
+    y = read <$> some digit -- Y coordinate is a number, i.e. sequence of digits

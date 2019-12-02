@@ -62,7 +62,7 @@ data TurnState
   | MoveWhite
   | MoveBlack
   | Start
-  | End
+  | End deriving (Show, Eq)
 
 data GamePhase = Phase1 | Phase2 deriving (Show, Read)
 
@@ -71,11 +71,13 @@ data Player
   | PWhite deriving (Show, Eq, Read)
 
 
-data Move = Move
-  { player :: Player
-  , start :: Coordinate
-  , end :: Coordinate
-  } deriving (Show, Eq)
+data Move
+  = Jump { player :: Player
+         , start :: Coordinate
+         , end :: Coordinate }
+  | Place { color :: Piece
+          , loc :: Coordinate }
+  deriving (Show, Eq)
 
 data GameState = GameState
   { board :: Board
@@ -83,4 +85,4 @@ data GameState = GameState
   , phase :: GamePhase
   }
 
-data GameError = InvalidMove | ParseError deriving (Show)
+data GameError = InvalidMove | MoveParseError deriving (Show, Eq)

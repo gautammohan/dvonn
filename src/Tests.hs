@@ -285,7 +285,7 @@ mini2 =
        ])
     (Stack [])
 
-move1 = Move PWhite (Coordinate (1,1)) (Coordinate (2,1))
+move1 = Jump PWhite (Coordinate (1,1)) (Coordinate (2,1))
 
 testEmptyBoard :: Test
 testEmptyBoard = "empty" ~: TestList [
@@ -387,22 +387,22 @@ tMove = TestList [testPlayerOwns, testIsLinear, testIsOnBoard, testDistance,
 
 testIsLinear :: Test
 testIsLinear = "isLinear" ~: TestList [
-   isLinear (Move PWhite (Coordinate (1,1)) (Coordinate (2,2))) ~?= True,
-   isLinear (Move PBlack (Coordinate (1,1)) (Coordinate (1,2))) ~?= True,
-   isLinear (Move PBlack (Coordinate (2,1)) (Coordinate (1,2))) ~?= False]
+   isLinear (Jump PWhite (Coordinate (1,1)) (Coordinate (2,2))) ~?= True,
+   isLinear (Jump PBlack (Coordinate (1,1)) (Coordinate (1,2))) ~?= True,
+   isLinear (Jump PBlack (Coordinate (2,1)) (Coordinate (1,2))) ~?= False]
 
 testIsOnBoard :: Test
 testIsOnBoard = "isOnBoard" ~: TestList [
-   isOnBoard' (Move PWhite (Coordinate (1,1)) (Coordinate (2,2))) ~?= True,
-   isOnBoard' (Move PWhite (Coordinate (1,5)) (Coordinate (2,2))) ~?= False,
-   isOnBoard' (Move PWhite (Coordinate (1,1)) (Coordinate (12,2))) ~?= False]
+   isOnBoard' (Jump PWhite (Coordinate (1,1)) (Coordinate (2,2))) ~?= True,
+   isOnBoard' (Jump PWhite (Coordinate (1,5)) (Coordinate (2,2))) ~?= False,
+   isOnBoard' (Jump PWhite (Coordinate (1,1)) (Coordinate (12,2))) ~?= False]
   where
     isOnBoard' = isOnBoard emptyDvonn
 
 testDistance :: Test
 testDistance = "distance" ~: TestList [
-   distance (Move PWhite (Coordinate (1,1)) (Coordinate (2,2))) ~?= 1,
-   distance (Move PWhite (Coordinate (1,1)) (Coordinate (1,3))) ~?= 2]
+   distance (Jump PWhite (Coordinate (1,1)) (Coordinate (2,2))) ~?= 1,
+   distance (Jump PWhite (Coordinate (1,1)) (Coordinate (1,3))) ~?= 2]
 
 testPlayerOwns :: Test
 testPlayerOwns = "playerOwns" ~: TestList [

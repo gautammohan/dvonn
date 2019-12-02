@@ -12,8 +12,6 @@ import Board
 import Tests
 import Data.Set as S hiding (foldr)
 
-parseMove = undefined
-
 printTops :: Int -> Int -> IO ()
 printTops n s = do
            let ns = [1 .. n]
@@ -33,14 +31,14 @@ printBases n s = do
                bases = foldr (\x acc-> " \\ /" ++ acc) " " ns
                spaces = foldr (\x acc-> " " ++ acc) "" ss
            putStrLn(spaces ++ bases)
-               
+
 printMiddles :: Board -> Int -> Int -> IO ()
 printMiddles b s i = do
             let c = S.toList $ S.filter (\(Coordinate (x,y)) -> y == i) (coordinates b)
                 ss = case s of
                    0 -> []
                    _ -> [1 .. s]
-                middles = foldr (\x acc -> "|" ++ label x ++ acc) "|" c 
+                middles = foldr (\x acc -> "|" ++ label x ++ acc) "|" c
                 spaces = foldr (\x acc-> " " ++ acc) "" ss
             putStrLn(spaces ++ middles) where
        label y = case innerstack b y of
@@ -66,7 +64,7 @@ printGridDvonn b = do
             printMiddles b 0 3
             printBases 11 0
             printMiddles b 2 4
-            printBases 10 2 
+            printBases 10 2
             printMiddles b 4 5
             printBases 9 4
 

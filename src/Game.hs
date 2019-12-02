@@ -37,16 +37,22 @@ executeMove m = do
       let newB = apply m b
           newT = getNextTurn newB (player m)
       modify (\gs -> gs {turn = newT, board = newB})
-    else throwError InvalidMove
+    else do
+    printErr InvalidMove
+    m <- getTurnInput
+    executeMove m
 
 startState :: GameState
 startState = GameState emptyDvonn Start Phase1
 
 getTurnInput :: Game Move
 getTurnInput = do
-  (lift . lift ) $ putStr "Move> "
-  s <- (lift . lift) getLine
-  case liftEither $ parseMove s of
+  b <- gets board
+  t <- gets turn
+  liftGame $ printBoard b
+  liftGame $ putStr $ show t ++ ">"
+  s <- liftGame getLine
+  case liftEither $ parseMove s t of
     Left e -> printErr e >> getTurnInput
     Right m -> return m
 
@@ -78,7 +84,13 @@ phase2 = do
     _ -> phase2
 
 dvonn :: Game (Maybe Player)
-dvonn = phase1 >> modify (\gs -> gs {phase = Phase2}) >> phase2
+dvonn = phase1 >> modify (\gs -> gs {phase = Phase2, turn = MoveBlack}) >> phase2
 
 evalGame :: GameState -> Game a -> IO (Either GameError (a, GameState))
 evalGame s g = runExceptT (runStateT g s)
+
+turn2player :: TurnState -> Player
+turn2player t
+  | t `elem` [PlacingWhite,MoveWhite] = PWhite
+  | t `elem` [PlacingBlack,MoveBlack] = PBlack
+  | otherwise = PWhite

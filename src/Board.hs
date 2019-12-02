@@ -125,10 +125,11 @@ calcWinner b = do
 -- | Executes a move
 -- TODO: Error handling
 apply :: Move -> Board -> Board
-apply (Move _ c1 c2) b =
+apply (Jump _ c1 c2) b =
   let b' = combine b c1 c2
       b'' = cleanup b'
    in b''
+apply (Place p loc) b = place b p loc
 
 combine :: Board -> Coordinate -> Coordinate -> Board
 combine b c1 c2 =
