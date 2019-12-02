@@ -414,7 +414,7 @@ testValidMove = "validMove" ~: TestList [
   validMove mini1 m ~?= True,
   validMove mini2 m ~?= False]
  where
-  m = Move PWhite  (Coordinate (1,1)) (Coordinate (2,2))
+  m = Jump PWhite  (Coordinate (1,1)) (Coordinate (2,2))
 
 testGetPossibleMoves :: Test
 testGetPossibleMoves = "getPossibleMoves" ~: TestList [
