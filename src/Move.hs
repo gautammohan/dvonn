@@ -68,12 +68,6 @@ getNextTurn b p = do
              | canMoveBlack -> MoveBlack
              | otherwise    -> End
 
---      Start -> PlacingRed
---      PlacingRed -> undefined
---      PlacingWhite -> undefined
---      PlacingBlack -> undefined
---      End -> undefined
-
 -- | Places a piece on an empty coordinate in the first phase of the game
 --
 --TODO: I'm not sure how to fill this in with the Game Monad. This is something

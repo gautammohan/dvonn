@@ -92,18 +92,3 @@ printGridMini b = do
 
 printBoard :: Board -> IO ()
 printBoard b = if size (coordinates b) == 9 then printGridMini b else printGridDvonn b
-
-
---Placeholder IO parsing stuff
-playGame :: Board -> IO ()
-playGame b = go b where
-  go board = do
-    putBoard board
-    putStr "imp > "
-    str <- getLine
-    case str of   --use parsing here
-      ('m':' ':'(':x1:',':y1:')':' ':'(':x2:',':y2:')':[]) -> return () 
-      _   -> putStrLn "?" >> go board
-  putBoard :: Board -> IO ()
-  putBoard g = printBoard g
-
