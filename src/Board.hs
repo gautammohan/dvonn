@@ -140,8 +140,9 @@ combine b c1 c2 =
 discard :: Board -> S.Set Coordinate -> Board
 discard b cs =
   let m = getMap b
-      discards = Stack $ S.foldr (\c s -> getStack (m M.! c) ++ s) [] cs
+      newDiscards = Stack $ S.foldr (\c s -> getStack (m M.! c) ++ s) [] cs
       newM = S.foldr (\c m -> M.insert c (Stack []) m) m cs
+      discards = Stack $ getStack newDiscards ++ getStack (getDiscard b)
    in b {getMap = newM, getDiscard = discards}
 
 -- | Search for and discard any coordinates that do not contain red pieces
