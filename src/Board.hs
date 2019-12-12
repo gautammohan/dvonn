@@ -13,7 +13,9 @@ import Defs
 import Data.List
 import Data.Maybe
 
-
+-- | Helper function to return a board containing the difference of two boards.
+-- Any nonempty spot shows the mismatch as a tuple: (contents of b1, contents of
+-- b2)
 diff :: Board -> Board -> (M.Map Coordinate (Maybe (Stack, Stack)),Maybe (Stack, Stack))
 diff (Board m1 d1) (Board m2 d2) =
   (M.filter isJust (M.intersectionWith f m1 m2), discardDiff)
@@ -27,7 +29,7 @@ diff (Board m1 d1) (Board m2 d2) =
         then Nothing
         else Just (d1, d2)
 
-
+-- | Get a set of all the Board's valid coordinates
 coordinates :: Board -> S.Set Coordinate
 coordinates = S.fromList . M.keys . getMap
 
@@ -35,11 +37,7 @@ coordinates = S.fromList . M.keys . getMap
 validCoordinate :: Board -> Coordinate -> Bool
 validCoordinate b = (`elem` coordinates b)
 
-validDvonnCoordinate :: Coordinate -> Bool
-validDvonnCoordinate = validCoordinate emptyDvonn
-validMiniCoordinate :: Coordinate -> Bool
-validMiniCoordinate = validCoordinate emptyMini
-
+-- | Given a coordinate, compute all its neighbors with respect to a board
 allNeighbors :: Board -> Coordinate -> S.Set Coordinate
 allNeighbors b (Coordinate (x, y)) =
   S.fromList $
@@ -75,7 +73,7 @@ neighbors :: Coordinate -> Board -> S.Set Coordinate
 neighbors c b = S.filter (nonempty b) (allNeighbors b c)
 
 -- | Find the component of nonempty spaces that a coordinate belongs to given a
--- board.
+-- board using DFS.
 component :: Board -> Coordinate -> S.Set Coordinate
 component b c =
   if nonempty b c
@@ -111,6 +109,8 @@ allComponents b = aux [] (nonempties b)
 isSurrounded :: Board -> Coordinate -> Bool
 isSurrounded b c = length (neighbors c b) == 6
 
+-- | Find the winner on the board by comparing the total height of all stacks
+-- controlled by black vs white. Ties are possible.
 calcWinner :: Board -> Maybe Player
 calcWinner b = do
     let remaining = Data.List.map (innerstack b) (S.toList (nonempties b))
@@ -125,18 +125,18 @@ calcWinner b = do
 -- | Executes a move
 -- TODO: Error handling
 apply :: Move -> Board -> Board
-apply (Jump _ c1 c2) b =
-  let b' = combine b c1 c2
-      b'' = cleanup b'
-   in b''
+apply (Jump _ c1 c2) b = cleanup $ combine b c1 c2
 apply (Place p loc) b = place b p loc
 
+-- | Given a board and coords a, b: place stack a on top of stack b
 combine :: Board -> Coordinate -> Coordinate -> Board
 combine b c1 c2 =
   let newStack = Stack $ innerstack b c1 ++ innerstack b c2
       newM = M.insert c1 (Stack []) (M.insert c2 newStack (getMap b))
    in b {getMap = newM}
 
+-- | Given a set of coordinates, replace each of them with an empty stack and add
+-- the stack to the discard pile
 discard :: Board -> S.Set Coordinate -> Board
 discard b cs =
   let m = getMap b
@@ -144,24 +144,28 @@ discard b cs =
       newM = S.foldr (\c m -> M.insert c (Stack []) m) m cs
    in b {getMap = newM, getDiscard = discards}
 
+-- | Search for and discard any coordinates that do not contain red pieces
 cleanup :: Board -> Board
 cleanup b =
   let emptyComponents = filter (not . hasRed b) (allComponents b)
    in foldr (flip discard) b emptyComponents
 
+-- | Helper function to get the stack of a coordinate on a board
 innerstack :: Board -> Coordinate -> [Piece]
 innerstack b = getStack . (getMap b M.!)
 
+-- | add a piece to the top of a stack at a coordinate
 place :: Board -> Piece -> Coordinate -> Board
 place b p c =
   let newB = M.adjust (addToStack p) c (getMap b)
       addToStack p (Stack s) = Stack (p : s)
    in b {getMap = newB}
 
--- | Returns list of nonempty spaces on board,  not including discard pile
+-- | returns a set of the nonempty spaces on board, not including discard pile
 nonempties :: Board -> S.Set Coordinate
 nonempties b = S.filter (nonempty b) (coordinates b)
 
+-- | returns a set of the empty spaces on board, not including discard pile
 empties :: Board -> S.Set Coordinate
 empties b = S.filter (not . nonempty b) (coordinates b)
 
@@ -178,5 +182,6 @@ numActivePieces :: Board -> Int
 numActivePieces =
   getSum . foldMap (Sum . length . getStack . snd) . M.toList . getMap
 
+-- | Count the number of discarded pieces
 numDiscardedPieces :: Board -> Int
 numDiscardedPieces = length . getStack . getDiscard

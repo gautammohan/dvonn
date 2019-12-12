@@ -50,7 +50,7 @@ getTurnInput = do
   b <- gets board
   t <- gets turn
   liftGame $ printBoard b
-  liftGame $ putStr $ show t ++ ">"
+  liftGame $ putStr $ show t ++ "> "
   s <- liftGame getLine
   case liftEither $ parseMove s t of
     Left e -> printErr e >> getTurnInput
@@ -65,13 +65,12 @@ takeTurn = do
   executeMove m
 
 phase1 :: Game ()
-phase1 = sequence_ $ intersperse takeTurn (map updateTurn phase1Turns)
+phase1 = sequence_ $ intersperse takeTurn phase1Turns
   where
     updateTurn :: TurnState -> Game ()
     updateTurn t = modify $ \gs -> gs {turn = t}
 
-    phase1Turns :: [TurnState]
-    phase1Turns =
+    phase1Turns = updateTurn <$>
       [PlacingRed, PlacingRed, PlacingRed] ++
       take 46 (cycle [PlacingBlack, PlacingWhite])
 

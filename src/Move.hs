@@ -41,6 +41,7 @@ playerOwns p (Stack s) = case p of
    PBlack -> head s == Black
    PWhite -> head s == White
 
+
 -- | Checks that the proposed move satisfies the following conditions
 --  1. The start and ending spaces are on the board and both contain stacks
 --  2. The move is linear
@@ -48,13 +49,15 @@ playerOwns p (Stack s) = case p of
 --  4. The move is the correct distance
 --  5. The player owns the stack he or she proposes to move
 validMove :: Board -> Move -> Bool
-validMove b m@Jump{} = case M.lookup (start m) (getMap b) of
-   Just (Stack s)  -> case nonempty b (end m) of
-        True -> isOnBoard b m  && isLinear m  &&
-                           not (isSurrounded b (start m)) &&
-                           distance m == length s && playerOwns (player m) (Stack s)
-        _  -> False
-   _       -> False
+validMove b m@Jump {} =
+  case M.lookup (start m) (getMap b) of
+    Just (Stack s) ->
+      nonempty b (end m) &&
+      isOnBoard b m &&
+      isLinear m &&
+      not (isSurrounded b (start m)) &&
+      distance m == length s && playerOwns (player m) (Stack s)
+    _ -> False
 validMove b m@(Place _ coord) = coord `S.member` empties b
 
 --We only need move or Turnstate

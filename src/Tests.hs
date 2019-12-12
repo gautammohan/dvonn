@@ -39,6 +39,11 @@ main = do
 -- A framework for randomized testing
 -------------------------------------------------------------------------------
 
+validDvonnCoordinate :: Coordinate -> Bool
+validDvonnCoordinate = validCoordinate emptyDvonn
+validMiniCoordinate :: Coordinate -> Bool
+validMiniCoordinate = validCoordinate emptyMini
+
 instance Arbitrary Piece where
   arbitrary = oneof $ return <$> [Red, White, Black]
 
