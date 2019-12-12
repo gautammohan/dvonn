@@ -4,7 +4,7 @@
 -- Assignment: Final Project
 -------------------------------------------------------------------------------
 
-module Move where
+module Move (validMove, getNextTurn, parseMove) where
 
 import Data.Map as M
 import Data.List

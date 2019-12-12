@@ -4,7 +4,27 @@
 -- Assignment: Final Project
 -------------------------------------------------------------------------------
 
-module Board where
+module Board
+  ( coordinates
+  , validCoordinate
+  , allNeighbors
+  , neighborOf
+  , containsRed
+  , hasRed
+  , neighbors
+  , component
+  , allComponents
+  , isSurrounded
+  , calcWinner
+  , apply
+  , nonempties
+  , empties
+  , nonempty
+  , countEmpty
+  , numActivePieces
+  , numDiscardedPieces
+  , innerstack
+  ) where
 
 import qualified Data.Map as M
 import Data.Monoid
@@ -12,6 +32,7 @@ import qualified Data.Set as S
 import Defs
 import Data.List
 import Data.Maybe
+
 
 -- | Helper function to return a board containing the difference of two boards.
 -- Any nonempty spot shows the mismatch as a tuple: (contents of b1, contents of

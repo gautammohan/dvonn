@@ -4,7 +4,7 @@
 -- Assignment: Final Project
 ------------------------------------------------------------------------------
 
-module Game where
+module Game (Game, evalGame, dvonn, phase1, phase2, startState) where
 
 import Control.Monad.State (StateT, get, gets, lift, modify, runStateT)
 import Control.Monad.Except
