@@ -30,16 +30,16 @@ main = do
   runTestTT (TestList [tBoard, tMove])
   putStrLn "Checking individual board properties for mini traces"
   mapM_ quickCheck $ forAll miniTrace . onTrace <$> boardProps
+  putStrLn "Checking each individual board prop for dvonn pairs"
+  mapM_ quickCheck $ forAll dvonnPairs . onPair <$> boardProps
+  putStrLn
+    "Checking the composition of all board properties for mini traces"
+  quickCheck $ forAll miniTrace (onTrace $ mconcat boardProps)
   putStrLn
     "Checking the composition of all board properties for dvonn traces (warning...this takes awhile)"
   quickCheck $ forAll dvonnTrace (onTrace $ mconcat boardProps)
   return ()
 
---quickCheck $ prop_no_disconnected_pieces emptyBoard
-
--- TODO: Generalize beyond emptyBoard once we have full arbitrary intances
---  quickCheck $ prop_empty_increase
---       (Trace [])
 -------------------------------------------------------------------------------
 -- A framework for randomized testing
 -------------------------------------------------------------------------------
