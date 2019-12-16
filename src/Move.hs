@@ -73,15 +73,6 @@ getNextTurn b p = do
              | canMoveBlack -> MoveBlack
              | otherwise    -> End
 
--- | Places a piece on an empty coordinate in the first phase of the game
---
---TODO: I'm not sure how to fill this in with the Game Monad. This is something
---we will probably want to replace later.
---Figure out how to check if this placement is valid,
---probably in the game monad.
---placePiece :: Board -> Piece -> Coordinate -> Board
---placePiece b p c = Board $ M.insert c (Stack [p]) (getMap b)
-
 -- | Finds all possible moves based on the board state. This function only works
 -- for jumps, and is assumed to be called in Phase 2
 getPossibleMoves :: Board -> [Move]
