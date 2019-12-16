@@ -146,9 +146,8 @@ summary1 =
   "White has two red pieces and Black has one red piece." ++
   "\n" ++
   "\n" ++
-  "To place a piece, use the command <coord>, for example, 'A3'" ++
-  "\n" ++
-  "\n" ++ "At any time you can see a list of menu options by typing 'menu'.\n"
+  "To place a piece, use the command <coord>, for example, 'A3'." ++
+  "\n"
 
 summary2 :: String
 summary2 =
@@ -163,6 +162,5 @@ summary2 =
   "Whoever controls the most pieces at the end wins!." ++
   "\n" ++
   "\n" ++
-  "To jump, use the command <start> 'to' <end>, for example 'A1 to A3'" ++
-  "\n" ++
-  "\n" ++ "At any time you can see a list of menu options by typing 'menu'."
+  "To jump, use the command <start> 'to' <end>, for example 'A1 to A3'." ++
+  "\n"
