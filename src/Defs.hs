@@ -92,7 +92,7 @@ data Move
          , end :: Coordinate }
   | Place { color :: Piece
           , loc :: Coordinate }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Read)
 
 -- | A GameState holds all the information necessary to determine the state of
 -- the game. The board holds the active stacks and discarded pieces. The turn
