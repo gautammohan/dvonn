@@ -4,7 +4,7 @@
 -- Assignment: Final Project
 -------------------------------------------------------------------------------
 
-module Move (validMove, getNextTurn, parseMove) where
+module Move (validMove, getNextTurn, parseMove, getPossibleMoves, playerOwns, isLinear, distance, isOnBoard) where
 
 import Data.Map as M
 import Data.List
@@ -60,7 +60,9 @@ validMove b m@Jump {} =
     _ -> False
 validMove b m@(Place _ coord) = coord `S.member` empties b
 
---We only need move or Turnstate
+-- | Given the player who has just gone, if the opposing player has a possible
+-- move, it is their turn. Otherwise the player goes again if there is a valid
+-- move. If there are no more possible moves, the game is over
 getNextTurn :: Board -> Player -> TurnState
 getNextTurn b p = do
    let canMoveBlack = not $ Data.List.null [m' | m' <- getPossibleMoves b, player m' == PBlack]

@@ -24,6 +24,8 @@ module Board
   , numActivePieces
   , numDiscardedPieces
   , innerstack
+  , place
+  , cleanup
   ) where
 
 import qualified Data.Map as M
@@ -112,6 +114,8 @@ component b c =
       let updated = newCoord `S.insert` curr
        in aux b updated (neighbors newCoord b)
 
+-- | Separate the board into a list of coordinate sets. None of the sets should
+-- overlap.
 allComponents :: Board -> [S.Set Coordinate]
 allComponents b = aux [] (nonempties b)
   where
