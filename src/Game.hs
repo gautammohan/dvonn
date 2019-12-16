@@ -59,7 +59,7 @@ getTurnInput = do
   b <- gets board
   t <- gets turn
   liftGame $ printBoard b
-  liftGame $ putStr $ show t ++ "> "
+  liftGame $ putStr $ prompt t ++ "> "
   s <- liftGame getLine
   case liftEither $ parseMove s t of
     Left e -> printErr e >> getTurnInput
@@ -67,7 +67,19 @@ getTurnInput = do
 
 -- | Print game errors
 printErr :: GameError -> Game ()
-printErr = lift . lift . print
+printErr err =
+  lift . lift . print $
+  case err of
+    MoveParseError -> "You entered a malformed move"
+    InvalidMove -> "Your move was incorrect"
+
+prompt :: TurnState -> String
+prompt PlacingRed = "Place a red piece"
+prompt PlacingWhite = "Place a white piece"
+prompt PlacingBlack = "Place a black piece"
+prompt MoveBlack = "Black Move"
+prompt MoveWhite = "White Move"
+prompt ts = show ts
 
 -- | the takeTurn computation represents a player inputting a well-formed, valid
 -- move and it being executed on the dvonn board.
@@ -102,11 +114,14 @@ phase2 = do
 
 -- | Dvonn represents the entire game as a computation
 dvonn :: Game (Maybe Player)
-dvonn = phase1 >> modify (\gs -> gs {phase = Phase2, turn = MoveBlack}) >> phase2
+dvonn = rules >> phase1 >> modify (\gs -> gs {phase = Phase2, turn = MoveBlack}) >> phase2
 
 -- | A function that lets us evaluate the Game monad
 evalGame :: GameState -> Game a -> IO (Either GameError (a, GameState))
 evalGame s g = runExceptT (runStateT g s)
+
+rules :: Game ()
+rules = liftGame $ putStrLn (summary1 ++ summary2 ++ "\n")
 
 -- | Determine which player should play from the turnstate
 turn2player :: TurnState -> Player
@@ -114,3 +129,40 @@ turn2player t
   | t `elem` [PlacingWhite,MoveWhite] = PWhite
   | t `elem` [PlacingBlack,MoveBlack] = PBlack
   | otherwise = PWhite
+
+summary1 :: String
+summary1 =
+  "Welcome to DVONN." ++
+  "\n" ++
+  "\n" ++
+  "In Phase 1, you must place your pieces one by one on" ++
+  "\n" ++
+  "unoccupied spaces on the game board. White will begin" ++
+  "\n" ++
+  "and players will alternate placing. Place your red" ++
+  "\n" ++
+  "pieces first, and then proceed to place your normal pieces." ++
+  "\n" ++
+  "White has two red pieces and Black has one red piece." ++
+  "\n" ++
+  "\n" ++
+  "To place a piece, use the command <coord>, for example, 'A3'" ++
+  "\n" ++
+  "\n" ++ "At any time you can see a list of menu options by typing 'menu'.\n"
+
+summary2 :: String
+summary2 =
+  "In Phase 2, you may move any stack of height n with your color" ++
+  "\n" ++
+  "piece on top to be on top of another stack that is exactly" ++
+  "\n" ++
+  "n hops away. Be careful, though! Any stacks that are not" ++
+  "\n" ++
+  "in a connected component with a red piece will be discarded." ++
+  "\n" ++
+  "Whoever controls the most pieces at the end wins!." ++
+  "\n" ++
+  "\n" ++
+  "To jump, use the command <start> 'to' <end>, for example 'A1 to A3'" ++
+  "\n" ++
+  "\n" ++ "At any time you can see a list of menu options by typing 'menu'."

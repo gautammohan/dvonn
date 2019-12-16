@@ -32,8 +32,7 @@ main = do
   mapM_ quickCheck $ forAll miniTrace . onTrace <$> boardProps
   putStrLn "Checking each individual board prop for dvonn pairs"
   mapM_ quickCheck $ forAll dvonnPairs . onPair <$> boardProps
-  putStrLn
-    "Checking the composition of all board properties for mini traces"
+  putStrLn "Checking the composition of all board properties for mini traces"
   quickCheck $ forAll miniTrace (onTrace $ mconcat boardProps)
   putStrLn
     "Checking the composition of all board properties for dvonn traces (warning...this takes awhile)"
@@ -121,7 +120,8 @@ instance Arbitrary Dvonn where
 -- | Generates a random board and one random valid move on that board
 pairOf :: Gen Board -> Gen (Board, Move)
 pairOf g = do
-  b <- g
+  let (Single no_holes) = prop_no_hole
+  b <- g `suchThat` no_holes
   m <- oneof $ return <$> getPossibleMoves b
   return (b,m)
 
