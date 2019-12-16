@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 -- Authors: Emily Diana and Gautam Mohan
--- Date:
+-- Date: 17 December 2019
 -- Assignment: Final Project
 ------------------------------------------------------------------------------
 
@@ -11,6 +11,8 @@ import System.IO
 import Board
 import Data.Set as S hiding (foldr)
 
+-- | Prints top notches of hexagonal board. Takes in a board, number of spaces
+-- for offset, and the row number.
 printTops :: Board -> Int -> Int -> IO ()
 printTops b s i = do
            let c = S.toList $ S.filter (\(Coordinate (x,y)) -> y == i) (coordinates b)
@@ -18,6 +20,8 @@ printTops b s i = do
                   where r b x = if containsRed b x then "*" else " "
            putStrLn(replicate s ' ' ++ tops)
 
+-- | Prints lower notches of top half of hexagonal board. Takes in a board, 
+-- number of spaces for offset, and the row number.
 printLowerTops :: Board -> Int -> Int -> IO ()
 printLowerTops b s i = do
            let c = S.toList $ S.filter (\(Coordinate (x,y)) -> y == i) (coordinates b)
@@ -26,12 +30,16 @@ printLowerTops b s i = do
                fullTop = " \\" ++ tops ++ "/"
            putStrLn(replicate s ' ' ++ fullTop)
 
+-- | Prints bottom notches of hexagonal board. Takes in a board, 
+-- number of spaces for offset, and the row number.
 printBases :: Board -> Int -> Int -> IO ()
-printBases b n s = do
-           let ns = [1 .. n]
-               bases = foldr (\x acc-> " \\ /" ++ acc) " " ns
+printBases b s i = do
+           let c = S.toList $ S.filter (\(Coordinate (x,y)) -> y == i) (coordinates b)
+               bases = foldr (\x acc-> " \\ /" ++ acc) " " c 
            putStrLn(replicate s ' ' ++ bases)
 
+-- | Prints middle line with stack color and size. Takes in a board, 
+-- number of spaces for offset, and the row number.
 printMiddlesDvonn :: Board -> Int -> Int -> IO ()
 printMiddlesDvonn b s i = do
             let c = S.toList $ S.filter (\(Coordinate (x,y)) -> y == i) (coordinates b)
@@ -47,6 +55,17 @@ printMiddlesDvonn b s i = do
                     size = length s
                 if size < 10 then col ++ " " ++ show size else col ++ show size
 
+-- | Prints top notches of hexagonal board. Takes in a board, number of spaces
+-- for offset, and the row number.
+printTopsMini :: Board -> Int -> Int -> IO ()
+printTopsMini b s i = do
+           let c = S.toList $ S.filter (\(Coordinate (x,y)) -> y == i) (coordinates b)
+               tops = foldr (\x acc-> " /" ++ r b x ++ "\\" ++ acc) " " c 
+                  where r b x = if containsRed b x then "*" else " "
+           putStrLn(replicate s ' ' ++ tops ++ "/")
+
+-- | Prints middle line of mini board with stack color and size. Takes in a board, 
+-- number of spaces for offset, and the row number.
 printMiddlesMini :: Board -> Int -> Int -> IO ()
 printMiddlesMini b s i = do
             let c = S.toList $ S.filter (\(Coordinate (x,y)) -> y == i) (coordinates b)
@@ -62,20 +81,33 @@ printMiddlesMini b s i = do
                     size = length s
                 if size < 10 then col ++ " " ++ show size else col ++ show size
 
--- | Prints normal Dvonn sized board. Can print an emty board, for example
--- with the command "printGridDvonn emptyDvonn"
+
+-- | Prints numeric labels for first coordinate on top of board
 printTopLabelsDvonn :: IO ()
-printTopLabelsDvonn = putStrLn("        A   B   C   D   E   F   G   H   I")
+printTopLabelsDvonn = do
+          let letters = ['A' .. 'I'] 
+              labels = foldr (\x acc -> "   " ++ [x] ++ acc) "" letters
+          putStrLn(replicate 5 ' ' ++ labels)    
 
+-- | Prints bottom labels for first coordinate on top of board
 printBottomLabelsDvonn :: IO ()
-printBottomLabelsDvonn = putStrLn("    C   D   E   F   G   H   I   J   K")
+printBottomLabelsDvonn = do
+          let letters = ['C' .. 'K']
+              labels = foldr (\x acc -> "   " ++ [x] ++ acc) "" letters
+          putStrLn(" " ++ labels)
 
+-- | Prints top labels for first coordinate on top of mini board
 printTopLabelsMini :: IO ()
-printTopLabelsMini = putStrLn("        A   B   C ")
+printTopLabelsMini = do
+          let letters = ['A' .. 'C']
+              labels = foldr (\x acc -> "   " ++ [x] ++ acc) "" letters
+          putStrLn(replicate 5 ' ' ++ labels ++ " ")
 
+-- | Prints bottom labels for first coordinate on top of mini board
 printBottomLabelsMini :: IO ()
-printBottomLabelsMini = putStrLn("A   B   C ")
+printBottomLabelsMini = putStrLn "A   B   C "
 
+-- | Prints full board
 printGridDvonn :: Board -> IO ()
 printGridDvonn b = do
             printTopLabelsDvonn
@@ -89,19 +121,10 @@ printGridDvonn b = do
             printMiddlesDvonn b 2 4
             printLowerTops b 2 5
             printMiddlesDvonn b 4 5
-            printBases b 9 4
+            printBases b 4 5
             printBottomLabelsDvonn
 
--- | Prints mini board. Can print an empty mini board, for example
--- with the command "printGridMini emptyMini"
---
-printTopsMini :: Board -> Int -> Int -> IO ()
-printTopsMini b s i = do
-           let c = S.toList $ S.filter (\(Coordinate (x,y)) -> y == i) (coordinates b)
-               tops = foldr (\x acc-> " /" ++ r b x ++ "\\" ++ acc) " " c 
-                  where r b x = if containsRed b x then "*" else " "
-           putStrLn(replicate s ' ' ++ tops ++ "/")
-           
+-- | Prints mini board
 printGridMini :: Board -> IO ()
 printGridMini b = do
             printTopLabelsMini
@@ -111,8 +134,9 @@ printGridMini b = do
             printMiddlesMini b 2 2
             printTopsMini b 0 3
             printMiddlesMini b 0 3
-            printBases b 3 0
+            printBases b 0 3
             printBottomLabelsMini
 
+-- | Prints full or mini board
 printBoard :: Board -> IO ()
 printBoard b = if size (coordinates b) == 9 then printGridMini b else printGridDvonn b
