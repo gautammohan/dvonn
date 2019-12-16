@@ -84,11 +84,13 @@ getPossibleMoves b = do
                         validMove b (Jump PBlack x y)]
    white_moves ++ black_moves
 
+-- | Attempt to parse a move from a raw input string
 parseMove :: String -> TurnState -> Either GameError Move
 parseMove s ts = case parse (move ts) s of
   Left _ -> Left MoveParseError
   Right m -> Right m
 
+-- | Given a turnstate, parse and construct a proper move
 move :: TurnState -> Parser Move
 move ts = choice [jump p, placement c]
   where
@@ -99,12 +101,16 @@ move ts = choice [jump p, placement c]
       Start -> (Black, PBlack)
       End -> (White, PWhite) --doesn't matter
 
+-- | A placement need to know 1. a coordinate 2. what piece is being placed there
 placement :: Piece -> Parser Move
 placement p = Place p <$> coord
 
+-- | A jump needs to know the start and end coordinate and who is making the jump
 jump :: Player -> Parser Move
 jump p = Jump p <$> coord <*> (some space *> string "to" *> some space *> coord)
 
+-- | A coordinate is of the form [A-Z][0-9]+ and is meant to represent x,y
+-- coordinates on the dvonn board (which are labeled by the board printer)
 coord :: Parser Coordinate
 coord = curry Coordinate <$> x <*> y
   where
