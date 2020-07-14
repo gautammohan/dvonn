@@ -1,6 +1,6 @@
 # Dvonn
 
-This is an implementation of the board game [DVONN][https://boardgamegeek.com/boardgame/2346/dvonn]. Instructions for how to play are provided on the splash screen. This project uses stack, and you can play using `stack run`.
+This is an implementation of the board game [DVONN](https://boardgamegeek.com/boardgame/2346/dvonn). Instructions for how to play are provided on the splash screen. This project uses stack, and you can play using `stack run`.
 
 # Module structure
 
