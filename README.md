@@ -1,10 +1,8 @@
-Emily Diana (ediana) and Gautam Mohan (gmohan1)
+# Dvonn
 
-* Description
+This is an implementation of the board game [DVONN][https://boardgamegeek.com/boardgame/2346/dvonn]. Instructions for how to play are provided on the splash screen. This project uses stack, and you can play using `stack run`.
 
-This is an implementation of the board game (DVONN)[https://boardgamegeek.com/boardgame/2346/dvonn]. Instructions for how to play are provided on the splash screen. This project uses stack, and you can play using `stack run`.
-
-* Module structure
+# Module structure
 
 The ordered overview of the
 files is as follows:
@@ -26,3 +24,7 @@ that determine the control flow of the game
 
 - *main/Demo.hs*: Intermediate files that can be used to play the game from
 intermediate states
+
+# Authors
+
+Written by Emily Diana and Gautam Mohan. Original board game created by Kris Burm.
