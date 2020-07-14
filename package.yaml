@@ -49,5 +49,6 @@ tests:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -main-is Spec
     dependencies:
     - finalproject
